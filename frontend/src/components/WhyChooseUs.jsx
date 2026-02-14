@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import {
   ShieldCheck,
   Sparkles,
@@ -31,89 +30,34 @@ export default function WhyChooseUs() {
   ];
 
   return (
-    <section className="relative bg-white py-12 md:py-24 overflow-hidden">
-
-      <div className="max-w-6xl mx-auto px-5 md:px-12">
-
-        {/* Heading */}
-        <div className="text-left md:text-center max-w-xl mx-auto">
-          <h2 className="text-2xl md:text-5xl font-semibold tracking-tight">
-            Why Choose <span className="text-gray-400">The Rent Hub</span>
+    <section className="bg-black px-5 py-14 text-white md:px-12 md:py-20">
+      <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
+            Why Choose <span className="text-orange-400">The Rent Hub</span>
           </h2>
-
-          <p className="mt-3 text-gray-500 text-sm md:text-lg">
-            Built for a smoother, smarter rental journey.
-          </p>
+          <p className="mt-3 text-sm text-slate-400 md:text-lg">Built for a smoother, smarter rental journey.</p>
         </div>
 
-
-        {/* MOBILE – Horizontal Snap Scroll */}
-        <div className="mt-10 md:hidden overflow-x-auto no-scrollbar">
-          <div className="flex gap-4 snap-x snap-mandatory">
-
-            {features.map((item, index) => {
-              const Icon = item.icon;
-
-              return (
-                <motion.div
-                  key={index}
-                  whileTap={{ scale: 0.96 }}
-                  className="min-w-[85%] snap-center bg-black text-white rounded-2xl p-6 relative"
-                >
-                  <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white text-black mb-5">
-                    <Icon size={18} />
-                  </div>
-
-                  <h3 className="text-lg font-medium">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm text-gray-300 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </motion.div>
-              );
-            })}
-
-          </div>
-        </div>
-
-
-
-        {/* DESKTOP – Offset Modern Grid */}
-        <div className="hidden md:grid md:grid-cols-2 gap-8 mt-16">
-
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
           {features.map((item, index) => {
             const Icon = item.icon;
-
             return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className={`border border-gray-200 rounded-3xl p-10 transition duration-300 hover:shadow-2xl bg-white ${
-                  index % 2 !== 0 ? "mt-10" : ""
+              <div
+                key={item.title}
+                className={`rounded-3xl border border-white/10 bg-white/5 p-8 transition hover:border-orange-400/40 ${
+                  index % 2 !== 0 ? "md:mt-8" : ""
                 }`}
               >
-                <div className="w-12 h-12 rounded-xl bg-black text-white flex items-center justify-center mb-6">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white">
                   <Icon size={20} />
                 </div>
-
-                <h3 className="text-xl font-semibold">
-                  {item.title}
-                </h3>
-
-                <p className="mt-3 text-gray-600 text-sm leading-relaxed">
-                  {item.desc}
-                </p>
-              </motion.div>
+                <h3 className="text-xl font-semibold">{item.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">{item.desc}</p>
+              </div>
             );
           })}
-
         </div>
-
       </div>
     </section>
   );
