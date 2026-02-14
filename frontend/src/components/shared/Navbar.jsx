@@ -19,7 +19,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Discover", path: "/" },
-    { name: "Rent Flat", path: "/rent" },
+    { name: "Rent a Flat", path: "/rent" },
     { name: "Our Services", path: "/services" },
     { name: "About", path: "/about" },
   ];

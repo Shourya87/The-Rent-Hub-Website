@@ -38,7 +38,7 @@ export default function WhyChooseUs() {
         {/* Heading */}
         <div className="text-left md:text-center max-w-xl mx-auto">
           <h2 className="text-2xl md:text-5xl font-semibold tracking-tight">
-            Why Choose <span className="text-gray-400">The Rent Hub</span>
+            Why Choose <span className="text-gray-400">The RentHub Company</span>
           </h2>
 
           <p className="mt-3 text-gray-500 text-sm md:text-lg">
