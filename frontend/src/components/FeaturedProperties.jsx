@@ -1,21 +1,18 @@
-import properties from "@/data/Properties";
+import { Link } from "react-router-dom";
 import PropertyCard from "@/components/property/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { usePropertiesContext } from "@/context/PropertiesContext";
 
 export default function FeaturedProperties() {
-  
-  // Agar future me featured field add karega to kaam karega
-  // warna fallback me first 3 properties show karega
-  const featured = properties.some(p => p.featured)
-    ? properties.filter(p => p.featured)
+  const { properties } = usePropertiesContext();
+
+  const featured = properties.some((property) => property.featured)
+    ? properties.filter((property) => property.featured)
     : properties.slice(0, 3);
 
   return (
     <section className="bg-white py-10 md:py-18 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
-
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
           <div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-black">
@@ -33,16 +30,11 @@ export default function FeaturedProperties() {
           </Link>
         </div>
 
-        {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {featured.map((property) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-            />
+            <PropertyCard key={property.id} property={property} />
           ))}
         </div>
-
       </div>
     </section>
   );

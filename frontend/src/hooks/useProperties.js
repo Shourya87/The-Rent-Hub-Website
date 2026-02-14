@@ -1,24 +1,25 @@
 import { useMemo } from "react";
-import properties from "../data/Properties";
+import { usePropertiesContext } from "@/context/PropertiesContext";
 
 const useProperties = (filters) => {
+  const { properties } = usePropertiesContext();
 
   const filteredProperties = useMemo(() => {
     return properties.filter((property) => {
+      const normalizedLocation = property.location.toLowerCase();
+      const normalizedBhk = (property.bhk || `${property.beds} BHK`).toLowerCase();
 
       const matchLocation = filters.location
-        ? property.location
-            .toLowerCase()
-            .includes(filters.location.toLowerCase())
+        ? normalizedLocation.includes(filters.location.toLowerCase())
         : true;
 
       const matchBHK = filters.bhk && filters.bhk !== "Any BHK"
-        ? property.bhk === filters.bhk
+        ? normalizedBhk === filters.bhk.toLowerCase()
         : true;
 
       return matchLocation && matchBHK;
     });
-  }, [filters]);
+  }, [filters, properties]);
 
   return filteredProperties;
 };

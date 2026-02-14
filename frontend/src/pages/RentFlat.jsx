@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import propertiesData from "../data/Properties";
+import { usePropertiesContext } from "@/context/PropertiesContext";
 import PropertyCard from "@/components/property/PropertyCard";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -21,6 +21,7 @@ const locationsList = [
 const bhkOptions = ["1 BHK", "2 BHK", "3 BHK", "4+ BHK"];
 
 export default function Rent() {
+  const { properties } = usePropertiesContext();
   const [openFilter, setOpenFilter] = useState(false);
   const [selectedBHK, setSelectedBHK] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
@@ -34,7 +35,7 @@ export default function Rent() {
   /* ===================== FILTER LOGIC ===================== */
 
   const filteredProperties = useMemo(() => {
-    let result = propertiesData.filter((property) => {
+    let result = properties.filter((property) => {
       const matchBHK =
         selectedBHK.length > 0
           ? selectedBHK.includes(property.bhk)
@@ -60,7 +61,7 @@ export default function Rent() {
     }
 
     return result;
-  }, [selectedBHK, selectedLocations, minPrice, maxPrice, sortBy]);
+  }, [selectedBHK, selectedLocations, minPrice, maxPrice, sortBy, properties]);
 
   const resetFilters = () => {
     setSelectedBHK([]);

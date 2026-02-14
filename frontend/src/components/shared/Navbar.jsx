@@ -133,7 +133,7 @@ const Navbar = () => {
 
                 {/* FIXED MOBILE LIST PROPERTY LINK */}
                 <Link
-                  to="/listproperty"
+                  to="/list-property"
                   className="mt-6 w-44 mx-auto bg-black text-white py-3 rounded-full font-bold hover:bg-gray-800 transition"
                 >
                   List Property
