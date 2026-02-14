@@ -14,3 +14,16 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Hidden Core-Team Admin Access
+
+- Core-team entry URL: `/core-team-entry`
+- Protected admin panel URL: `/core-team/ops-console`
+
+If your hosting platform returns **404 on direct URL open**, make sure SPA rewrites are enabled.
+This repo already includes common rewrite configs:
+
+- `public/_redirects` (Netlify)
+- `public/.htaccess` (Apache)
+- `vercel.json` (Vercel)
+- Core access input accepts either the original team secret code or the approved SHA-256 hash value.
