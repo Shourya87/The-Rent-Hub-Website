@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Building2, ChevronDown } from "lucide-react";
+import { MapPin, Building2, ChevronDown } from "lucide-react";
 
 const propertyOptions = ["Any BHK", "1 BHK", "2 BHK", "3+ BHK", "PG"];
 
@@ -13,14 +13,12 @@ const Hero = () => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Search Button Logic
   const handleSearch = () => {
     navigate(
       `/listings?location=${encodeURIComponent(location)}&type=${encodeURIComponent(selectedType)}`,
     );
   };
 
-  /* Close dropdown on outside click */
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,146 +30,86 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative bg-white text-black overflow-hidden py-6">
-      {/* Soft Gradient Background Layer */}
-      <div className="absolute inset-0 bg-linear-to-br from-gray-100 via-white to-gray-200 pointer-events-none" />
+    <section className="relative overflow-hidden bg-black px-6 py-20 text-white md:px-12">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#ff7b1a22,transparent_40%),radial-gradient(circle_at_bottom_right,#ec489922,transparent_45%)]" />
 
-      {/* Subtle Radial Glow */}
-      <div className="absolute -top-40 -right-40 w-125 h-125 bg-black/5 rounded-full blur-3xl" />
-      <div className="absolute -bottom-40 -left-40 w-100 h-100 bg-black/5 rounded-full blur-3xl" />
-
-      <div className="relative max-w-7xl mx-auto px-6 md:px-12 py-2 md:py-12">
-        {/* Badge */}
-        <div className="flex justify-center mb-6">
-          <span className="px-3 py-1 text-xs font-medium tracking-tight uppercase bg-black text-white rounded-full">
-            Smart Rental Platform
-          </span>
+      <div className="relative mx-auto max-w-7xl">
+        <div className="mx-auto mb-6 flex w-fit items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-orange-300">
+          Smart Rental Platform
         </div>
 
-        {/* Heading */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-center leading-tight tracking-tight">
+        <h1 className="text-center text-4xl font-extrabold leading-tight md:text-6xl lg:text-7xl">
           Rent Smarter.
           <br />
-          Live Better.
+          <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
+            Live Better.
+          </span>
         </h1>
 
-        {/* Subheading */}
-        <p className="mt-6 text-gray-600 text-lg md:text-xl text-center max-w-2xl mx-auto">
-          Verified listings, instant owner connect. Experience renting the
-          modern way.
+        <p className="mx-auto mt-6 max-w-3xl text-center text-base text-slate-300 md:text-xl">
+          Verified listings, instant owner connect, and a premium rental journey built for modern India.
         </p>
 
-        {/* SEARCH PANEL */}
-        <div className="mt-10 max-w-5xl mx-auto">
-          <div className="relative bg-white/90 backdrop-blur-xl border border-gray-200 shadow-2xl rounded-3xl p-4 md:p-5 transition-all duration-300 hover:shadow-3xl">
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-              {/* ================= LOCATION FIELD ================= */}
-              <div className="flex items-center gap-3 w-full md:flex-1 bg-gray-50 focus-within:bg-white border border-gray-200 focus-within:border-black transition rounded-2xl px-4 py-3 shadow-sm">
-                <MapPin size={18} className="text-gray-500 shrink-0" />
-
-                <Input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="Enter location (e.g., Sector 62)"
-                  className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm md:text-base"
-                />
-              </div>
-
-              {/* ================= PROPERTY TYPE DROPDOWN ================= */}
-              <div
-                ref={dropdownRef}
-                className="relative w-full md:w-40 shrink-0"
-              >
-                <div
-                  onClick={() => setOpenDropdown(!openDropdown)}
-                  className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 cursor-pointer hover:bg-white hover:border-black transition-all duration-200 shadow-sm"
-                >
-                  <div className="flex items-center gap-2 text-sm">
-                    <Building2 size={16} className="text-gray-500" />
-                    <span className="truncate">{selectedType}</span>
-                  </div>
-
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform duration-200 ${
-                      openDropdown ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-
-                {/* Dropdown */}
-                <div
-                  className={`absolute mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden transition-all duration-200 ${
-                    openDropdown
-                      ? "opacity-100 translate-y-0 scale-100"
-                      : "opacity-0 -translate-y-2 scale-95 pointer-events-none"
-                  }`}
-                >
-                  {propertyOptions.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => {
-                        setSelectedType(option);
-                        setOpenDropdown(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-sm transition-all ${
-                        selectedType === option
-                          ? "bg-black text-white"
-                          : "hover:bg-gray-100"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ================= SEARCH BUTTON ================= */}
-              <Button
-                onClick={handleSearch}
-                className="w-full md:w-auto px-8 py-3 rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-semibold text-sm md:text-base transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                <Search size={16} className="mr-2" />
-                Search
-              </Button>
+        <div className="mx-auto mt-12 max-w-5xl rounded-3xl border border-white/15 bg-white/5 p-4 backdrop-blur-xl md:p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 py-3 md:flex-1">
+              <MapPin size={18} className="shrink-0 text-orange-300" />
+              <Input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="Enter location (e.g., Sector 62)"
+                className="border-0 bg-transparent text-white placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
             </div>
-          </div>
-        </div>
 
-        {/* TRUST STATS */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-10 text-center max-w-4xl mx-auto">
-          <div>
-            <h3 className="text-2xl font-bold">10K+</h3>
-            <p className="text-gray-500 text-sm">Active Listings</p>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold">5K+</h3>
-            <p className="text-gray-500 text-sm">Happy Tenants</p>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold">100%</h3>
-            <p className="text-gray-500 text-sm">Verified Properties</p>
+            <div ref={dropdownRef} className="relative w-full md:w-44">
+              <div
+                onClick={() => setOpenDropdown(!openDropdown)}
+                className="flex cursor-pointer items-center justify-between rounded-2xl border border-white/10 bg-black/40 px-4 py-3"
+              >
+                <div className="flex items-center gap-2 text-sm text-slate-200">
+                  <Building2 size={16} className="text-orange-300" />
+                  <span>{selectedType}</span>
+                </div>
+                <ChevronDown size={16} className={`transition ${openDropdown ? "rotate-180" : ""}`} />
+              </div>
+
+              <div
+                className={`absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl transition-all ${
+                  openDropdown
+                    ? "pointer-events-auto translate-y-0 opacity-100"
+                    : "pointer-events-none -translate-y-2 opacity-0"
+                }`}
+              >
+                {propertyOptions.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSelectedType(option);
+                      setOpenDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left text-sm ${
+                      selectedType === option
+                        ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white"
+                        : "text-slate-200 hover:bg-white/10"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              onClick={handleSearch}
+              className="w-full rounded-2xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 py-6 font-semibold text-white hover:opacity-90 md:w-auto"
+            >
+              Search
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* Animation */}
-      <style jsx>{`
-        .animate-fadeIn {
-          animation: fadeIn 0.18s ease forwards;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-5px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0px);
-          }
-        }
-      `}</style>
     </section>
   );
 };
