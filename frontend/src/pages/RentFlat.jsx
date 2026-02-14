@@ -82,10 +82,10 @@ export default function Rent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 md:px-12 py-10">
+    <div className="min-h-screen bg-black text-white px-4 md:px-12 py-10">
 
       {/* ================= STICKY FILTER BAR ================= */}
-      <div className="sticky top-20 z-20 bg-white border shadow-sm rounded-xl px-4 py-3 flex justify-between items-center mb-6">
+      <div className="sticky top-20 z-20 bg-slate-950/90 border border-white/10 shadow-sm rounded-xl px-4 py-3 flex justify-between items-center mb-6 backdrop-blur">
 
         <p className="text-sm font-medium">
           {filteredProperties.length} properties found
@@ -95,7 +95,7 @@ export default function Rent() {
 
           <select
             onChange={(e) => setSortBy(e.target.value)}
-            className="border rounded-md px-2 py-1 text-sm"
+            className="border border-white/20 bg-black rounded-md px-2 py-1 text-sm"
           >
             <option value="newest">Newest</option>
             <option value="low">Price: Low to High</option>
@@ -104,7 +104,7 @@ export default function Rent() {
 
           <button
             onClick={() => setOpenFilter(!openFilter)}
-            className="flex items-center gap-2 text-sm bg-black text-white px-3 py-1.5 rounded-md"
+            className="flex items-center gap-2 text-sm bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 rounded-md"
           >
             <SlidersHorizontal size={16} />
             Filters
@@ -119,7 +119,7 @@ export default function Rent() {
           openFilter ? "max-h-300 opacity-100 mb-8" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="bg-white border rounded-2xl shadow-lg p-4 md:p-6">
+        <div className="bg-slate-950 border border-white/10 rounded-2xl shadow-lg p-4 md:p-6">
 
           {/* BHK + LOCATION SIDE BY SIDE */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-sm">
@@ -185,13 +185,13 @@ export default function Rent() {
                   type="number"
                   value={minPrice}
                   onChange={(e) => setMinPrice(Number(e.target.value))}
-                  className="border rounded px-2 py-1 w-full text-sm"
+                  className="border border-white/20 bg-black rounded px-2 py-1 w-full text-sm"
                 />
                 <input
                   type="number"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="border rounded px-2 py-1 w-full text-sm"
+                  className="border border-white/20 bg-black rounded px-2 py-1 w-full text-sm"
                 />
               </div>
             </div>
@@ -267,13 +267,13 @@ export default function Rent() {
           <div className="mt-6 flex gap-3">
             <button
               onClick={resetFilters}
-              className="border px-3 py-1.5 text-xs rounded-md"
+              className="border border-white/20 px-3 py-1.5 text-xs rounded-md"
             >
               Reset
             </button>
             <button
               onClick={() => setOpenFilter(false)}
-              className="bg-black text-white px-3 py-1.5 text-xs rounded-md"
+              className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 text-xs rounded-md"
             >
               Apply
             </button>
