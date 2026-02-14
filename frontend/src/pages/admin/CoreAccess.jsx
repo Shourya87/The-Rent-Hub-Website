@@ -60,8 +60,8 @@ export default function CoreAccess() {
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-24">
       <div className="mx-auto max-w-md rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-slate-900">Core Access</h1>
-        <p className="mt-2 text-sm text-slate-500">Enter team code to continue. (Plain code or approved SHA-256 hash)</p>
+        <h1 className="text-2xl text-center font-bold font-sans text-slate-900">Admin Panel</h1>
+        <p className="mt-2 text-md text-center text-slate-500">Enter team code given by Shourya(Admin).</p>
 
         <form onSubmit={handleUnlock} className="mt-6 space-y-4">
           <input
