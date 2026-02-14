@@ -17,6 +17,10 @@ async function generateHash(value) {
   return toHex(digest);
 }
 
+const normalizeHash = (value) => value.trim().toLowerCase();
+
+const isSha256Hash = (value) => /^[a-f0-9]{64}$/i.test(value.trim());
+
 export default function CoreAccess() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -34,9 +38,16 @@ export default function CoreAccess() {
     setLoading(true);
     setError("");
 
-    const candidateHash = await generateHash(code);
+    const normalizedInput = normalizeHash(code);
+    const expectedHash = normalizeHash(CORE_CODE_HASH);
 
-    if (candidateHash === CORE_CODE_HASH) {
+    const matchesByHashValue =
+      isSha256Hash(normalizedInput) && normalizedInput === expectedHash;
+
+    const candidateHash = await generateHash(code);
+    const matchesBySecretCode = normalizeHash(candidateHash) === expectedHash;
+
+    if (matchesByHashValue || matchesBySecretCode) {
       sessionStorage.setItem(ADMIN_SESSION_KEY, "granted");
       navigate(ADMIN_PANEL_PATH, { replace: true });
       return;
@@ -50,7 +61,7 @@ export default function CoreAccess() {
     <div className="min-h-screen bg-slate-100 px-4 py-24">
       <div className="mx-auto max-w-md rounded-2xl border bg-white p-8 shadow-sm">
         <h1 className="text-xl font-semibold text-slate-900">Core Access</h1>
-        <p className="mt-2 text-sm text-slate-500">Enter team code to continue.</p>
+        <p className="mt-2 text-sm text-slate-500">Enter team code to continue. (Plain code or approved SHA-256 hash)</p>
 
         <form onSubmit={handleUnlock} className="mt-6 space-y-4">
           <input
