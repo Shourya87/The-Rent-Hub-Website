@@ -34,7 +34,7 @@ export default function WhyChooseUs() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
-            Why Choose <span className="text-orange-400">The Rent Hub</span>
+            Why Choose <span className="text-orange-400">The RentHub Company</span>
           </h2>
           <p className="mt-3 text-sm text-slate-400 md:text-lg">Built for a smoother, smarter rental journey.</p>
         </div>
