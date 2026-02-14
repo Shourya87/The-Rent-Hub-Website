@@ -26,4 +26,3 @@ This repo already includes common rewrite configs:
 - `public/_redirects` (Netlify)
 - `public/.htaccess` (Apache)
 - `vercel.json` (Vercel)
-- Core access input accepts either the original team secret code or the approved SHA-256 hash value.
