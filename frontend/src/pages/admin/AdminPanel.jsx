@@ -128,7 +128,7 @@ export default function AdminPanel() {
             </label>
 
             <div className="flex gap-3 md:col-span-2">
-              <button type="submit" className="rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white">
+              <button type="submit" className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white">
                 {editingId ? "Update Property" : "Add Property"}
               </button>
               {editingId && (

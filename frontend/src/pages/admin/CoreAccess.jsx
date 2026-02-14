@@ -57,19 +57,10 @@ export default function CoreAccess() {
   };
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-slate-100 px-4 py-24">
       <div className="mx-auto max-w-md rounded-2xl border bg-white p-8 shadow-sm">
         <h1 className="text-2xl text-center font-bold font-sans text-slate-900">Admin Panel</h1>
         <p className="mt-2 text-md text-center text-slate-500">Enter team code given by Shourya(Admin).</p>
-=======
-    <div className="min-h-screen bg-black px-4 py-24 text-white">
-      <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-slate-950 p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-white">Core Access</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Enter team code to continue. (Plain code or approved SHA-256 hash)
-        </p>
->>>>>>> 991918f1d22d8ba6c030b249b7e1199fa76d5051
 
         <form onSubmit={handleUnlock} className="mt-6 space-y-4">
           <input
@@ -86,7 +77,7 @@ export default function CoreAccess() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white"
+            className="w-full rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white"
             disabled={loading}
           >
             {loading ? "Checking..." : "Unlock"}

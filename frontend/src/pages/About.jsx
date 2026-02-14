@@ -27,37 +27,37 @@ export default function AboutSection() {
         {/* =============== Section Label =============== */}
         <div className="text-center mb-6">
           <span className="px-4 py-1 text-xs tracking-widest uppercase rounded-full bg-white/10 text-white">
-            About The Rent Hub
+            About The RentHub Company
           </span>
         </div>
 
         {/* =============== Heading =============== */}
         <h2
-          className={`text-4xl md:text-6xl font-extrabold text-center leading-tight transition duration-1000 ${
+          className={`text-3xl md:text-6xl font-extrabold text-center leading-tight transition duration-1000 ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
         >
           We’re Reinventing
           <br />
           <span className="text-orange-500">
-            The Way India Rents Homes
+            The Way India Rents 
           </span>
         </h2>
 
         {/* =============== Description =============== */}
         <p
-          className={`mt-8 max-w-3xl mx-auto text-gray-300 text-lg text-center transition duration-1000 delay-200 ${
+          className={`mt-8 max-w-3xl mx-auto text-gray-300 text-md text-center transition duration-1000 delay-200 ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
         >
-          The Rent Hub is built for speed, trust, and modern renters.
-          We eliminate brokers, simplify discovery, and directly connect
-          tenants with verified property owners — making renting smarter,
+          The RentHub Company is built for speed, trust, and modern renters.<br />
+          We directly connect tenants with verified 
+          property owners — making renting smarter,
           safer, and stress-free.
         </p>
 
         {/* =============== Features Grid =============== */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
 
           <FeatureCard
             icon={<ShieldCheck size={28} />}

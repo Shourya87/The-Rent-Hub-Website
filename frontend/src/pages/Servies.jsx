@@ -14,18 +14,18 @@ export default function Services() {
       <div className="mx-auto max-w-7xl">
         <div className="text-center">
           <span className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-orange-300">
-            Services & USP
+            Services We Offer
           </span>
 
-          <h2 className="mt-6 text-4xl font-extrabold md:text-6xl">
-            We Are Not Just a Rental Platform.
+          <h2 className="mt-6 text-3xl font-extrabold font-sans md:text-6xl">
+            We Stay With You.
             <br />
-            <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
-              We Are A Rental Support Partner.
+            <span className="bg-linear-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
+              Until You Settle.
             </span>
           </h2>
 
-          <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-300">
+          <p className="mx-auto mt-6 max-w-3xl px-5 text-md text-slate-300">
             Most rental portals treat renting as a search task. We treat it as a responsibility — handled end to end.
           </p>
         </div>
@@ -41,18 +41,10 @@ export default function Services() {
 
         <div className="mt-24 rounded-3xl border border-white/10 bg-white/5 p-12 text-center">
           <h3 className="text-2xl font-light text-slate-300 md:text-3xl">Most tenants and owners don’t say:</h3>
-          <h2 className="mt-4 text-3xl font-extrabold md:text-5xl">“I want more listings.”</h2>
-          <h3 className="mt-10 text-2xl font-light text-slate-300 md:text-3xl">They say:</h3>
-          <h2 className="mt-4 text-3xl font-extrabold text-orange-400 md:text-5xl">“Someone please handle this properly.”</h2>
-          <p className="mt-10 text-lg text-slate-300">That gap is real. And it’s growing.</p>
-        </div>
-
-        <div className="mt-20 text-center">
-          <h2 className="text-4xl font-bold">Renting Should Be Coordinated, <span className="text-orange-400">Not Complicated.</span></h2>
-          <button className="mx-auto mt-10 flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 px-10 py-4 font-semibold text-white">
-            Experience The Difference
-            <ArrowRight size={18} />
-          </button>
+          <h2 className="mt-2 text-[23px] font-extrabold md:text-5xl">“I want more listings.”</h2>
+          <h3 className="mt-12 text-2xl font-light text-slate-300 md:text-3xl">They say:</h3>
+          <h2 className="mt-2 text-2xl font-extrabold text-orange-400 md:text-5xl">“Someone please handle this properly.”</h2>
+          <p className="mt-8 text-lg text-slate-300">That gap is real. And it’s growing.</p>
         </div>
       </div>
     </section>
