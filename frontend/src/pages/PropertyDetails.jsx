@@ -27,7 +27,7 @@ export default function PropertyDetails() {
             <img
               src={property.image}
               alt={property.title}
-              className="w-full h-[450px] object-cover"
+              className="w-full h-112.5 object-cover"
             />
           </div>
 

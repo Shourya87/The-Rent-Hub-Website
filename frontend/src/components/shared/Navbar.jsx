@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navbar = () => {
   const location = useLocation();
@@ -28,6 +24,8 @@ const Navbar = () => {
     { name: "About", path: "/about" },
   ];
 
+  const isActivePath = (path) => location.pathname === path;
+
   return (
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 border-b ${
@@ -37,7 +35,7 @@ const Navbar = () => {
       }`}
     >
       <div className="w-full px-6 md:px-14 flex items-center justify-between">
-
+        
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <img
@@ -45,23 +43,18 @@ const Navbar = () => {
             alt="The Rent Hub"
             className="h-12 md:h-16 object-contain"
           />
-          <h1 className="ml-2 text-xl md:text-2xl font-bold font-mono tracking-normal text-black">
+          <h1 className="ml-2 text-xl md:text-3xl font-bold tracking-tight text-black">
             The RentHub Company
           </h1>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-12 text-[17px] font-semibold tracking-wide">
-
+        {/* ================= DESKTOP NAV ================= */}
+        <div className="hidden md:flex items-center gap-12 text-[16px] font-semibold tracking-wide">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = isActivePath(item.path);
 
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="relative group"
-              >
+              <Link key={item.path} to={item.path} className="relative group">
                 <span
                   className={`transition duration-200 ${
                     isActive
@@ -73,7 +66,7 @@ const Navbar = () => {
                 </span>
 
                 <span
-                  className={`absolute left-0 -bottom-2 h-0.75 bg-black origin-left transition-transform duration-150 ${
+                  className={`absolute left-0 -bottom-2 h-0.5 bg-black origin-left transition-transform duration-200 ${
                     isActive
                       ? "scale-x-100"
                       : "scale-x-0 group-hover:scale-x-100"
@@ -83,14 +76,21 @@ const Navbar = () => {
             );
           })}
 
-          {/* CTA */}
-          <Button className="bg-black text-white rounded-full px-6 py-2 font-bold hover:bg-gray-800 transition">
-            List Property
-          </Button>
-
+          {/* ===== FIXED LIST PROPERTY BUTTON ===== */}
+          <Link to="/list-property">
+            <Button
+              className={`rounded-full px-6 py-2 font-bold transition ${
+                isActivePath("/list-property")
+                  ? "bg-black text-white"
+                  : "bg-black text-white hover:bg-gray-800"
+              }`}
+            >
+              List Property
+            </Button>
+          </Link>
         </div>
 
-        {/* Mobile Nav */}
+        {/* ================= MOBILE NAV ================= */}
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -104,37 +104,44 @@ const Navbar = () => {
               className="bg-white text-black w-[75%] max-w-[320px] border-l border-gray-200"
             >
               {/* Logo */}
-              <div className="mt-8 mb-12 text-center">
+              <div className="mt-8 mb-10 text-center">
                 <img
                   src="/logotransparent.png"
                   alt="The Rent Hub"
                   className="h-10 mx-auto"
                 />
+                <h1 className="text-xl font-bold text-black mt-2">
+                  The RentHub Company
+                </h1>
               </div>
 
               {/* Links */}
-              <div className="flex flex-col gap-8 text-xl font-semibold text-center">
-
+              <div className="flex flex-col gap-8 text-lg font-semibold text-center">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="text-gray-600 hover:text-black transition"
+                    className={`transition ${
+                      isActivePath(item.path)
+                        ? "text-black"
+                        : "text-gray-600 hover:text-black"
+                    }`}
                   >
                     {item.name}
                   </Link>
                 ))}
 
-                <Button className="mt-6 bg-black text-white py-3 rounded-full font-bold hover:bg-gray-800">
+                {/* FIXED MOBILE LIST PROPERTY LINK */}
+                <Link
+                  to="/listproperty"
+                  className="mt-6 w-44 mx-auto bg-black text-white py-3 rounded-full font-bold hover:bg-gray-800 transition"
+                >
                   List Property
-                </Button>
-
+                </Link>
               </div>
-
             </SheetContent>
           </Sheet>
         </div>
-
       </div>
     </nav>
   );

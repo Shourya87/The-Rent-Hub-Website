@@ -12,7 +12,7 @@ export default function FeaturedProperties() {
     : properties.slice(0, 3);
 
   return (
-    <section className="bg-white py-20 md:py-28 px-6 md:px-12">
+    <section className="bg-white py-10 md:py-18 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
