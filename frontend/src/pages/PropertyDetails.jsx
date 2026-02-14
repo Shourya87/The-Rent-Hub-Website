@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
-import properties from "@/data/Properties";
+import { usePropertiesContext } from "@/context/PropertiesContext";
 import { MapPin, BedDouble, Bath, Ruler, Phone, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function PropertyDetails() {
   const { id } = useParams();
+  const { properties } = usePropertiesContext();
   const property = properties.find((p) => p.id === Number(id));
 
   if (!property) {
