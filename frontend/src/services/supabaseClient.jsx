@@ -1,12 +1,40 @@
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const STORAGE_KEY = "renthub_supabase_session";
 const listeners = new Set();
 
+const normalizeSupabaseUrl = (value) => {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return "";
+  }
+
+  const cleanedValue = trimmedValue.replace(/\/+$/, "");
+
+  if (/^https?:\/\//i.test(cleanedValue)) {
+    return cleanedValue;
+  }
+
+  if (cleanedValue.includes(".")) {
+    return `https://${cleanedValue}`;
+  }
+
+  return `https://${cleanedValue}.supabase.co`;
+};
+
+const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
+
 const getSupabaseConfigError = () => {
-  if (!supabaseUrl) {
+  if (!rawSupabaseUrl?.trim()) {
     return "Missing VITE_SUPABASE_URL environment variable.";
+  }
+
+  try {
+    new URL(supabaseUrl);
+  } catch {
+    return "Invalid VITE_SUPABASE_URL. Use the full Supabase project URL or project ref.";
   }
 
   if (!supabaseAnonKey) {
@@ -76,11 +104,22 @@ const signInWithPassword = async ({ email, password }) => {
     return { data: null, error: { message: configError } };
   }
 
-  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: buildHeaders(),
-    body: JSON.stringify({ email, password }),
-  });
+  let response;
+
+  try {
+    response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: buildHeaders(),
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    return {
+      data: null,
+      error: {
+        message: "Unable to reach Supabase auth server. Check VITE_SUPABASE_URL.",
+      },
+    };
+  }
 
   const payload = await parseResponseBody(response);
 
@@ -152,9 +191,18 @@ export const supabase = {
         return { data: null, error: { message: configError } };
       }
 
-      const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
-        headers: buildHeaders(true),
-      });
+      let response;
+
+      try {
+        response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
+          headers: buildHeaders(true),
+        });
+      } catch {
+        return {
+          data: null,
+          error: { message: "Unable to reach Supabase API. Check VITE_SUPABASE_URL." },
+        };
+      }
 
       const data = await parseResponseBody(response);
 
