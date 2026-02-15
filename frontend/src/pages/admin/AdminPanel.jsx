@@ -10,6 +10,7 @@ const emptyForm = {
   propertyType: "Flat",
   location: "",
   image: "",
+  video: "",
   highlights: "",
   featured: false,
   flatRent: "",
@@ -19,7 +20,9 @@ const emptyForm = {
   furnished: "",
   availability: "",
   occupancyFor: "",
-  pgRent: "12000",
+  postedOn: "",
+  propertyId: "",
+  pgRent: "",
   sharing: "1",
 };
 
@@ -38,11 +41,21 @@ const getBedsFromSize = (size) => {
   return Number.isNaN(numeric) ? 1 : numeric;
 };
 
+const fileToDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Unable to read file"));
+    reader.readAsDataURL(file);
+  });
+
 const buildDescription = (form) => {
   if (form.propertyType === "PG") {
     return [
       "Rent: " + form.pgRent,
       "Sharing: " + form.sharing,
+      "Posted On: " + (form.postedOn || "N/A"),
+      "Property Id: " + (form.propertyId || "N/A"),
       CONTACT_NOTE,
     ].join("\n");
   }
@@ -56,6 +69,8 @@ const buildDescription = (form) => {
     "Furnished: " + form.furnished,
     "Availablity: " + form.availability,
     "For Student/Family/Girls/Boys/Working: " + form.occupancyFor,
+    "Posted On: " + (form.postedOn || "N/A"),
+    "Property Id: " + (form.propertyId || "N/A"),
     CONTACT_NOTE,
   ].join("\n");
 };
@@ -79,6 +94,21 @@ export default function AdminPanel() {
     }));
   };
 
+  const handleFileUpload = async (event) => {
+    const { name, files } = event.target;
+    const file = files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const mediaUrl = await fileToDataUrl(file);
+    setForm((prev) => ({
+      ...prev,
+      [name]: mediaUrl,
+    }));
+  };
+
   const resetForm = () => {
     setEditingId(null);
     setForm(emptyForm);
@@ -97,6 +127,7 @@ export default function AdminPanel() {
       baths: isPG ? 1 : 1,
       area: isPG ? 0 : 0,
       image: form.image,
+      video: form.video,
       highlights: form.highlights
         .split(",")
         .map((item) => item.trim())
@@ -111,6 +142,9 @@ export default function AdminPanel() {
             rent: form.pgRent,
             sharing: form.sharing,
             contactNote: CONTACT_NOTE,
+            postedOn: form.postedOn || "N/A",
+            propertyId: form.propertyId || "N/A",
+            video: form.video || "",
           }
         : {
             rent: form.flatRent,
@@ -122,6 +156,9 @@ export default function AdminPanel() {
             availability: form.availability,
             occupancyFor: form.occupancyFor,
             contactNote: CONTACT_NOTE,
+            postedOn: form.postedOn || "N/A",
+            propertyId: form.propertyId || "N/A",
+            video: form.video || "",
           },
     };
 
@@ -149,6 +186,7 @@ export default function AdminPanel() {
       propertyType,
       location: property.location,
       image: property.image,
+      video: property.video || property.details?.video || "",
       highlights: property.highlights.join(", "),
       featured: Boolean(property.featured),
       flatRent: propertyType === "Flat" ? String(property.details?.rent || property.price || "") : "",
@@ -158,7 +196,9 @@ export default function AdminPanel() {
       furnished: property.details?.furnished || "",
       availability: property.details?.availability || "",
       occupancyFor: property.details?.occupancyFor || "",
-      pgRent: propertyType === "PG" ? String(property.details?.rent || property.price || "12000") : "12000",
+      postedOn: property.details?.postedOn || "",
+      propertyId: String(property.details?.propertyId || property.id || ""),
+      pgRent: propertyType === "PG" ? String(property.details?.rent || property.price || "") : "",
       sharing: property.details?.sharing || "1",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -195,7 +235,16 @@ export default function AdminPanel() {
             </select>
 
             <input name="location" value={form.location} onChange={onChange} required placeholder="Location" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
-            <input name="image" value={form.image} onChange={onChange} placeholder="Image URL" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
+            <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
+              <label className="mb-1 block text-xs text-slate-400">Property Image (Supabase-ready upload field)</label>
+              <input type="file" name="image" accept="image/*" onChange={handleFileUpload} className="w-full text-sm" />
+              {form.image && <p className="mt-1 text-xs text-green-400">Image selected</p>}
+            </div>
+            <div className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2">
+              <label className="mb-1 block text-xs text-slate-400">Property Video (Supabase-ready upload field)</label>
+              <input type="file" name="video" accept="video/*" onChange={handleFileUpload} className="w-full text-sm" />
+              {form.video && <p className="mt-1 text-xs text-green-400">Video selected</p>}
+            </div>
             <input name="highlights" value={form.highlights} onChange={onChange} placeholder="Highlights (comma separated)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
 
             {form.propertyType === "Flat" ? (
@@ -207,19 +256,19 @@ export default function AdminPanel() {
                 <input name="furnished" value={form.furnished} onChange={onChange} required placeholder="Furnished" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
                 <input name="availability" value={form.availability} onChange={onChange} required placeholder="Availablity" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
                 <input name="occupancyFor" value={form.occupancyFor} onChange={onChange} required placeholder="For Student/Family/Girls/Boys/Working" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
+                <input name="postedOn" value={form.postedOn} onChange={onChange} placeholder="Posted On" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
+                <input name="propertyId" value={form.propertyId} onChange={onChange} placeholder="Property Id" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
               </>
             ) : (
               <>
-                <select name="pgRent" value={form.pgRent} onChange={onChange} className="rounded-lg border border-white/20 bg-black px-3 py-2" required>
-                  <option value="12000">Rent: 12000</option>
-                  <option value="13000">Rent: 13000</option>
-                  <option value="14000">Rent: 14000</option>
-                </select>
+                <input name="pgRent" type="number" min="0" value={form.pgRent} onChange={onChange} required placeholder="Rent" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
                 <select name="sharing" value={form.sharing} onChange={onChange} className="rounded-lg border border-white/20 bg-black px-3 py-2" required>
                   <option value="1">Sharing: 1</option>
                   <option value="2">Sharing: 2</option>
                   <option value="3">Sharing: 3</option>
                 </select>
+                <input name="postedOn" value={form.postedOn} onChange={onChange} placeholder="Posted On" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
+                <input name="propertyId" value={form.propertyId} onChange={onChange} placeholder="Property Id" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
               </>
             )}
 
@@ -254,6 +303,7 @@ export default function AdminPanel() {
                   <th className="px-3 py-2">Title</th>
                   <th className="px-3 py-2">Location</th>
                   <th className="px-3 py-2">Type</th>
+                  <th className="px-3 py-2">Property Id</th>
                   <th className="px-3 py-2">Price</th>
                   <th className="px-3 py-2">Actions</th>
                 </tr>
@@ -264,6 +314,7 @@ export default function AdminPanel() {
                     <td className="px-3 py-3 font-medium text-white">{property.title}</td>
                     <td className="px-3 py-3 text-slate-300">{property.location}</td>
                     <td className="px-3 py-3 text-slate-300">{property.propertyType || property.category || "Flat"}</td>
+                    <td className="px-3 py-3 text-slate-300">{property.details?.propertyId || property.id}</td>
                     <td className="px-3 py-3 text-slate-300">₹{property.price}</td>
                     <td className="px-3 py-3">
                       <div className="flex gap-2">

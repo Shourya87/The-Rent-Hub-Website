@@ -10,7 +10,8 @@ const renderInfoRows = (property) => {
     return [
       { label: "Rent", value: property.details?.rent || property.price },
       { label: "Sharing", value: property.details?.sharing || "N/A" },
-      { label: "Property Id", value: property.id },
+      { label: "Posted On", value: property.details?.postedOn || "N/A" },
+      { label: "Property Id", value: property.details?.propertyId || property.id },
     ];
   }
 
@@ -27,7 +28,7 @@ const renderInfoRows = (property) => {
       value: property.details?.occupancyFor || "N/A",
     },
     { label: "Posted On", value: property.details?.postedOn || "N/A" },
-    { label: "Property Id", value: property.id },
+    { label: "Property Id", value: property.details?.propertyId || property.id },
   ];
 };
 
@@ -59,6 +60,12 @@ export default function PropertyDetails() {
             <img src={property.image} className="h-32 rounded-xl object-cover" />
             <img src={property.image} className="h-32 rounded-xl object-cover" />
           </div>
+
+          {property.video && (
+            <div className="overflow-hidden rounded-3xl border border-white/10">
+              <video src={property.video} controls className="w-full" />
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
