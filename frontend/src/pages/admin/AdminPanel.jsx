@@ -19,6 +19,8 @@ const emptyForm = {
   furnished: "",
   availability: "",
   occupancyFor: "",
+  postedOn: "",
+  propertyId: "",
   pgRent: "12000",
   sharing: "1",
 };
@@ -43,6 +45,8 @@ const buildDescription = (form) => {
     return [
       "Rent: " + form.pgRent,
       "Sharing: " + form.sharing,
+      "Posted On: " + (form.postedOn || "N/A"),
+      "Property Id: " + (form.propertyId || "N/A"),
       CONTACT_NOTE,
     ].join("\n");
   }
@@ -56,6 +60,8 @@ const buildDescription = (form) => {
     "Furnished: " + form.furnished,
     "Availablity: " + form.availability,
     "For Student/Family/Girls/Boys/Working: " + form.occupancyFor,
+    "Posted On: " + (form.postedOn || "N/A"),
+    "Property Id: " + (form.propertyId || "N/A"),
     CONTACT_NOTE,
   ].join("\n");
 };
@@ -111,6 +117,8 @@ export default function AdminPanel() {
             rent: form.pgRent,
             sharing: form.sharing,
             contactNote: CONTACT_NOTE,
+            postedOn: form.postedOn || "N/A",
+            propertyId: form.propertyId || "N/A",
           }
         : {
             rent: form.flatRent,
@@ -122,6 +130,8 @@ export default function AdminPanel() {
             availability: form.availability,
             occupancyFor: form.occupancyFor,
             contactNote: CONTACT_NOTE,
+            postedOn: form.postedOn || "N/A",
+            propertyId: form.propertyId || "N/A",
           },
     };
 
@@ -158,6 +168,8 @@ export default function AdminPanel() {
       furnished: property.details?.furnished || "",
       availability: property.details?.availability || "",
       occupancyFor: property.details?.occupancyFor || "",
+      postedOn: property.details?.postedOn || "",
+      propertyId: String(property.details?.propertyId || property.id || ""),
       pgRent: propertyType === "PG" ? String(property.details?.rent || property.price || "12000") : "12000",
       sharing: property.details?.sharing || "1",
     });
@@ -207,6 +219,8 @@ export default function AdminPanel() {
                 <input name="furnished" value={form.furnished} onChange={onChange} required placeholder="Furnished" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
                 <input name="availability" value={form.availability} onChange={onChange} required placeholder="Availablity" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
                 <input name="occupancyFor" value={form.occupancyFor} onChange={onChange} required placeholder="For Student/Family/Girls/Boys/Working" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
+                <input name="postedOn" value={form.postedOn} onChange={onChange} placeholder="Posted On" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
+                <input name="propertyId" value={form.propertyId} onChange={onChange} placeholder="Property Id" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
               </>
             ) : (
               <>
@@ -220,6 +234,8 @@ export default function AdminPanel() {
                   <option value="2">Sharing: 2</option>
                   <option value="3">Sharing: 3</option>
                 </select>
+                <input name="postedOn" value={form.postedOn} onChange={onChange} placeholder="Posted On" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
+                <input name="propertyId" value={form.propertyId} onChange={onChange} placeholder="Property Id" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
               </>
             )}
 

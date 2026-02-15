@@ -10,7 +10,8 @@ const renderInfoRows = (property) => {
     return [
       { label: "Rent", value: property.details?.rent || property.price },
       { label: "Sharing", value: property.details?.sharing || "N/A" },
-      { label: "Property Id", value: property.id },
+      { label: "Posted On", value: property.details?.postedOn || "N/A" },
+      { label: "Property Id", value: property.details?.propertyId || property.id },
     ];
   }
 
@@ -27,7 +28,7 @@ const renderInfoRows = (property) => {
       value: property.details?.occupancyFor || "N/A",
     },
     { label: "Posted On", value: property.details?.postedOn || "N/A" },
-    { label: "Property Id", value: property.id },
+    { label: "Property Id", value: property.details?.propertyId || property.id },
   ];
 };
 
