@@ -4,6 +4,32 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const STORAGE_KEY = "renthub_supabase_session";
 const listeners = new Set();
 
+const getSupabaseConfigError = () => {
+  if (!supabaseUrl) {
+    return "Missing VITE_SUPABASE_URL environment variable.";
+  }
+
+  if (!supabaseAnonKey) {
+    return "Missing VITE_SUPABASE_ANON_KEY environment variable.";
+  }
+
+  return null;
+};
+
+const parseResponseBody = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
 const readSession = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -45,16 +71,30 @@ const buildHeaders = (withAuth = false) => {
 const getSession = async () => ({ data: { session: readSession() }, error: null });
 
 const signInWithPassword = async ({ email, password }) => {
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    return { data: null, error: { message: configError } };
+  }
+
   const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: buildHeaders(),
     body: JSON.stringify({ email, password }),
   });
 
-  const payload = await response.json();
+  const payload = await parseResponseBody(response);
 
   if (!response.ok) {
-    return { data: null, error: { message: payload.msg || payload.error_description || "Login failed" } };
+    return {
+      data: null,
+      error: {
+        message: payload?.msg || payload?.error_description || "Login failed",
+      },
+    };
+  }
+
+  if (!payload) {
+    return { data: null, error: { message: "Login failed: empty server response." } };
   }
 
   writeSession(payload);
@@ -107,14 +147,19 @@ export const supabase = {
   },
   rest: {
     async get(path) {
+      const configError = getSupabaseConfigError();
+      if (configError) {
+        return { data: null, error: { message: configError } };
+      }
+
       const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
         headers: buildHeaders(true),
       });
 
-      const data = await response.json();
+      const data = await parseResponseBody(response);
 
       if (!response.ok) {
-        return { data: null, error: data };
+        return { data: null, error: data || { message: "Request failed" } };
       }
 
       return { data, error: null };
