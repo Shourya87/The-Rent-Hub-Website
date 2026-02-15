@@ -1,113 +1,96 @@
-import { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Building2, ChevronDown } from "lucide-react";
+import { ArrowRight, Building2, Home, ShieldCheck, Sparkles } from "lucide-react";
 
-const propertyOptions = ["Any BHK", "1 BHK", "2 BHK", "3+ BHK", "PG"];
+const quickActions = [
+  {
+    title: "Search Property",
+    subtitle: "Verified flats in top localities",
+    tone: "from-pink-600 to-rose-500",
+    action: "Rent a Flat",
+    onClick: (navigate) => navigate("/rent"),
+    icon: Home,
+  },
+  {
+    title: "Post your Property",
+    subtitle: "Get quality leads quickly",
+    tone: "from-amber-700 to-rose-700",
+    action: "List Property",
+    onClick: (navigate) => navigate("/list-property"),
+    icon: Building2,
+  },
+  {
+    title: "Trusted Rentals",
+    subtitle: "100% owner verified + easy support",
+    tone: "from-indigo-600 to-violet-600",
+    action: "Explore Listings",
+    onClick: (navigate) => navigate("/listings"),
+    icon: ShieldCheck,
+  },
+];
 
 const Hero = () => {
-  const [location, setLocation] = useState("");
-  const [selectedType, setSelectedType] = useState("Any BHK");
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleSearch = () => {
-    navigate(
-      `/listings?location=${encodeURIComponent(location)}&type=${encodeURIComponent(selectedType)}`,
-    );
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenDropdown(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-20 text-white md:px-12">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#ff7b1a22,transparent_40%),radial-gradient(circle_at_bottom_right,#ec489922,transparent_45%)]" />
+    <section className="relative overflow-hidden bg-slate-50 px-5 py-14 md:px-10 md:py-20">
+      <div className="absolute -top-24 -left-16 h-56 w-56 rounded-full bg-pink-200/40 blur-3xl" />
+      <div className="absolute right-0 bottom-0 h-64 w-64 rounded-full bg-indigo-200/40 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="mx-auto mb-6 flex w-fit items-center rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-orange-300">
-          Smart Rental Platform
+        <div className="mx-auto mb-4 flex w-fit items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+          <Sparkles size={14} className="text-pink-500" />
+          New style rental experience
         </div>
 
-        <h1 className="text-center text-4xl font-extrabold leading-tight md:text-6xl lg:text-7xl">
-          Rent Smarter.
+        <h1 className="text-center text-4xl font-extrabold leading-tight text-slate-900 md:text-6xl">
+          Find your next home,
           <br />
-          <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
-            Live Better.
+          <span className="bg-gradient-to-r from-pink-600 to-indigo-600 bg-clip-text text-transparent">
+            faster & smarter.
           </span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-3xl text-center text-base text-slate-300 md:text-xl">
-          Verified listings, instant owner connect, and a premium rental journey built for modern India.
+        <p className="mx-auto mt-5 max-w-3xl text-center text-sm text-slate-600 md:text-lg">
+          Inspired by modern mobile card layouts — now focused on quick actions so users can jump directly to
+          rental discovery.
         </p>
 
-        <div className="mx-auto mt-12 max-w-5xl rounded-3xl border border-white/15 bg-white/5 p-4 backdrop-blur-xl md:p-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 py-3 md:flex-1">
-              <MapPin size={18} className="shrink-0 text-orange-300" />
-              <Input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Enter location (e.g., Sector 62)"
-                className="border-0 bg-transparent text-white placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-            </div>
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={() => navigate("/rent")}
+            className="rounded-2xl bg-gradient-to-r from-pink-600 to-indigo-600 px-8 py-6 text-base font-semibold text-white shadow-lg shadow-pink-200 hover:opacity-95"
+          >
+            Go to Rent a Flat
+            <ArrowRight size={18} />
+          </Button>
+        </div>
 
-            <div ref={dropdownRef} className="relative w-full md:w-44">
-              <div
-                onClick={() => setOpenDropdown(!openDropdown)}
-                className="flex cursor-pointer items-center justify-between rounded-2xl border border-white/10 bg-black/40 px-4 py-3"
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {quickActions.map((card) => {
+            const Icon = card.icon;
+            return (
+              <article
+                key={card.title}
+                className={`rounded-3xl bg-gradient-to-br ${card.tone} p-6 text-white shadow-xl transition-transform duration-300 hover:-translate-y-1`}
               >
-                <div className="flex items-center gap-2 text-sm text-slate-200">
-                  <Building2 size={16} className="text-orange-300" />
-                  <span>{selectedType}</span>
+                <div className="mb-3 flex items-center gap-2 text-white/90">
+                  <Icon size={18} />
+                  <span className="text-xs font-semibold uppercase tracking-[0.15em]">Quick Access</span>
                 </div>
-                <ChevronDown size={16} className={`transition ${openDropdown ? "rotate-180" : ""}`} />
-              </div>
-
-              <div
-                className={`absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl transition-all ${
-                  openDropdown
-                    ? "pointer-events-auto translate-y-0 opacity-100"
-                    : "pointer-events-none -translate-y-2 opacity-0"
-                }`}
-              >
-                {propertyOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setSelectedType(option);
-                      setOpenDropdown(false);
-                    }}
-                    className={`w-full px-4 py-3 text-left text-sm ${
-                      selectedType === option
-                        ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white"
-                        : "text-slate-200 hover:bg-white/10"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Button
-              onClick={handleSearch}
-              className="w-full rounded-2xl bg-gradient-to-r from-orange-500 to-pink-500 px-8 py-6 font-semibold text-white hover:opacity-90 md:w-auto"
-            >
-              Search
-            </Button>
-          </div>
+                <h3 className="text-3xl font-extrabold leading-tight">{card.title}</h3>
+                <p className="mt-2 text-sm text-white/90">{card.subtitle}</p>
+                <button
+                  type="button"
+                  onClick={() => card.onClick(navigate)}
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold backdrop-blur-sm hover:bg-white/30"
+                >
+                  {card.action}
+                  <ArrowRight size={16} />
+                </button>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>
