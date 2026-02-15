@@ -1,5 +1,7 @@
-const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { env } from "vite";
+
+const rawSupabaseUrl = env.VITE_SUPABASE_URL;
+const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
 
 const STORAGE_KEY = "renthub_supabase_session";
 const listeners = new Set();
