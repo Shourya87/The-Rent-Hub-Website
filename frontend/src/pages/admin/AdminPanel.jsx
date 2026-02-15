@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePropertiesContext } from "@/context/PropertiesContext";
-import { ADMIN_SESSION_KEY, CORE_ENTRY_PATH } from "@/constants/adminAccess";
+import { CORE_ENTRY_PATH } from "@/constants/adminAccess";
+import { supabase } from "@/services/supabaseClient";
 
 const CONTACT_NOTE = "Contact us for more details.";
 
@@ -171,8 +172,8 @@ export default function AdminPanel() {
     resetForm();
   };
 
-  const handleLockPanel = () => {
-    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  const handleLockPanel = async () => {
+    await supabase.auth.signOut();
     navigate(CORE_ENTRY_PATH, { replace: true });
   };
 
