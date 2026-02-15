@@ -7,6 +7,7 @@ const PropertiesContext = createContext(null);
 
 const normalizeProperty = (property, fallbackId) => {
   const beds = Number(property.beds) || 1;
+  const propertyType = property.propertyType?.trim() || property.category?.trim() || "Flat";
 
   return {
     id: Number(property.id) || fallbackId,
@@ -27,6 +28,9 @@ const normalizeProperty = (property, fallbackId) => {
       "Property details will be shared by the admin.",
     featured: Boolean(property.featured),
     bhk: property.bhk?.trim() || `${beds} BHK`,
+    category: propertyType,
+    propertyType,
+    details: property.details || null,
   };
 };
 
