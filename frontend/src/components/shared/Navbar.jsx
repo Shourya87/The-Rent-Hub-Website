@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 const Navbar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,20 +31,20 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 border-b ${
         scrolled
-          ? "bg-white shadow-md border-gray-200 py-2"
-          : "bg-white/95 backdrop-blur-md border-gray-100 py-3"
+          ? "bg-black/95 backdrop-blur-xl border-white/10 py-2 shadow-lg"
+          : "bg-black/95 backdrop-blur-xl border-white/5 py-3"
       }`}
     >
       <div className="w-full px-6 md:px-14 flex items-center justify-between">
-        
+
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <img
-            src="/logotransparent.png"
+            src="/logo.png"
             alt="The Rent Hub"
-            className="h-12 md:h-16 object-contain"
+            className="h-10 md:h-14 object-contain"
           />
-          <h1 className="ml-2 text-xl md:text-3xl font-bold tracking-tight text-black">
+          <h1 className="ml-2 text-xl md:text-2xl font-bold tracking-tight text-white">
             The RentHub Company
           </h1>
         </Link>
@@ -58,15 +59,15 @@ const Navbar = () => {
                 <span
                   className={`transition duration-200 ${
                     isActive
-                      ? "text-black"
-                      : "text-gray-500 group-hover:text-black"
+                      ? "text-white"
+                      : "text-white/60 group-hover:text-white"
                   }`}
                 >
                   {item.name}
                 </span>
 
                 <span
-                  className={`absolute left-0 -bottom-2 h-0.5 bg-black origin-left transition-transform duration-200 ${
+                  className={`absolute left-0 -bottom-2 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500 origin-left transition-transform duration-300 ${
                     isActive
                       ? "scale-x-100"
                       : "scale-x-0 group-hover:scale-x-100"
@@ -76,14 +77,13 @@ const Navbar = () => {
             );
           })}
 
-          {/* ===== FIXED LIST PROPERTY BUTTON ===== */}
+          {/* Premium Gradient Button */}
           <Link to="/list-property">
             <Button
-              className={`rounded-full px-6 py-2 font-bold transition ${
-                isActivePath("/list-property")
-                  ? "bg-black text-white"
-                  : "bg-black text-white hover:bg-gray-800"
-              }`}
+              className="rounded-full px-6 py-2 font-bold text-white 
+              bg-gradient-to-r from-orange-500 to-pink-500 
+              hover:scale-105 hover:shadow-xl 
+              transition-all duration-300"
             >
               List Property
             </Button>
@@ -92,49 +92,54 @@ const Navbar = () => {
 
         {/* ================= MOBILE NAV ================= */}
         <div className="md:hidden">
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <button>
-                <Menu className="h-7 w-7 text-black" />
+              <button onClick={() => setOpen(true)}>
+                <Menu className="h-7 w-7 text-white" />
               </button>
             </SheetTrigger>
 
             <SheetContent
               side="right"
-              className="bg-white text-black w-[75%] max-w-[320px] border-l border-gray-200"
+              className="bg-black text-white w-[75%] max-w-[320px] border-l border-white/10"
             >
-              {/* Logo */}
+              {/* Mobile Logo */}
               <div className="mt-8 mb-10 text-center">
                 <img
-                  src="/logotransparent.png"
+                  src="/logo.png"
                   alt="The Rent Hub"
                   className="h-10 mx-auto"
                 />
-                <h1 className="text-xl font-bold text-black mt-2">
+                <h1 className="text-xl font-bold mt-3">
                   The RentHub Company
                 </h1>
               </div>
 
-              {/* Links */}
+              {/* Mobile Links */}
               <div className="flex flex-col gap-8 text-lg font-semibold text-center">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
+                    onClick={() => setOpen(false)}
                     className={`transition ${
                       isActivePath(item.path)
-                        ? "text-black"
-                        : "text-gray-600 hover:text-black"
+                        ? "text-white"
+                        : "text-white/60 hover:text-white"
                     }`}
                   >
                     {item.name}
                   </Link>
                 ))}
 
-                {/* FIXED MOBILE LIST PROPERTY LINK */}
+                {/* Mobile CTA */}
                 <Link
                   to="/list-property"
-                  className="mt-6 w-44 mx-auto bg-black text-white py-3 rounded-full font-bold hover:bg-gray-800 transition"
+                  onClick={() => setOpen(false)}
+                  className="mt-6 w-44 mx-auto rounded-full py-3 font-bold text-white 
+                  bg-gradient-to-r from-orange-500 to-pink-500 
+                  hover:scale-105 hover:shadow-lg 
+                  transition-all duration-300"
                 >
                   List Property
                 </Link>
@@ -142,6 +147,7 @@ const Navbar = () => {
             </SheetContent>
           </Sheet>
         </div>
+
       </div>
     </nav>
   );

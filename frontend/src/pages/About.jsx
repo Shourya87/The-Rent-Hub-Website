@@ -46,14 +46,13 @@ export default function AboutSection() {
 
         {/* =============== Description =============== */}
         <p
-          className={`mt-8 max-w-3xl mx-auto text-gray-300 text-md text-center transition duration-1000 delay-200 ${
+          className={`mt-8 max-w-3xl mx-auto text-gray-300 text-sm text-center px-2 transition duration-1000 delay-200 ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
         >
           The RentHub Company is built for speed, trust, and modern renters.<br />
-          We directly connect tenants with verified 
-          property owners — making renting smarter,
-          safer, and stress-free.
+          We directly connect tenants with verified property owners
+          — making renting smarter, safer, and stress-free.
         </p>
 
         {/* =============== Features Grid =============== */}

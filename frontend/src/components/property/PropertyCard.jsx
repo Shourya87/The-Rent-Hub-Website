@@ -34,7 +34,7 @@ export default function PropertyCard({ property }) {
 
         <Link
           to={`/property/${property.id}`}
-          className="mt-6 block rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 py-3 text-center font-medium text-white"
+          className="mt-6 block rounded-xl bg-linear-to-r from-orange-500 to-pink-500 py-3 text-center font-medium text-white"
         >
           View Details
         </Link>
