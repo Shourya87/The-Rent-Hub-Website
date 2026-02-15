@@ -17,6 +17,7 @@ const normalizeProperty = (property, fallbackId) => {
     image:
       property.image?.trim() ||
       "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1200&auto=format&fit=crop",
+    video: property.video?.trim() || property.details?.video?.trim() || "",
     description:
       property.description?.trim() ||
       "Property details will be shared by the admin.",

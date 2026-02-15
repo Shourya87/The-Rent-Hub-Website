@@ -60,6 +60,12 @@ export default function PropertyDetails() {
             <img src={property.image} className="h-32 rounded-xl object-cover" />
             <img src={property.image} className="h-32 rounded-xl object-cover" />
           </div>
+
+          {property.video && (
+            <div className="overflow-hidden rounded-3xl border border-white/10">
+              <video src={property.video} controls className="w-full" />
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
