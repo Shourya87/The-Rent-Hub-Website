@@ -3,6 +3,9 @@ import { usePropertiesContext } from "@/context/PropertiesContext";
 import { MapPin, Phone, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const WHATSAPP_NUMBER_PLACEHOLDER = "YOUR_WHATSAPP_NUMBER";
+const WHATSAPP_MESSAGE_PLACEHOLDER = "Hi, I want details for this property.";
+
 const renderInfoRows = (property) => {
   const type = property.propertyType || property.category || "Flat";
 
@@ -46,6 +49,9 @@ export default function PropertyDetails() {
   }
 
   const detailRows = renderInfoRows(property);
+  const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER_PLACEHOLDER}?text=${encodeURIComponent(
+    `${WHATSAPP_MESSAGE_PLACEHOLDER} (${property.title})`
+  )}`;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -100,9 +106,11 @@ export default function PropertyDetails() {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button className="flex-1 rounded-full bg-linear-to-r from-orange-500 to-pink-500 text-white hover:opacity-90">
-              <Phone size={16} className="mr-2" />
-              Contact Us
+            <Button asChild className="flex-1 rounded-full bg-linear-to-r from-orange-500 to-pink-500 text-white hover:opacity-90">
+              <a href={whatsappLink} target="_blank" rel="noreferrer">
+                <Phone size={16} className="mr-2" />
+                Contact Us
+              </a>
             </Button>
           </div>
         </div>
