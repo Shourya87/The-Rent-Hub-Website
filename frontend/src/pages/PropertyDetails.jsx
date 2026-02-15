@@ -89,15 +89,7 @@ export default function PropertyDetails() {
           <div className="flex gap-4 pt-4">
             <Button className="flex-1 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:opacity-90">
               <Phone size={16} className="mr-2" />
-              Contact Owner
-            </Button>
-
-            <Button
-              variant="outline"
-              className="rounded-full border-white/30 bg-transparent text-white hover:bg-white hover:text-black"
-            >
-              <Heart size={16} className="mr-2" />
-              Save
+              Contact Us
             </Button>
           </div>
         </div>
