@@ -14,15 +14,9 @@ const normalizeProperty = (property, fallbackId) => {
     title: property.title?.trim() || "Untitled Property",
     location: property.location?.trim() || "Unknown Location",
     price: Number(property.price) || 0,
-    beds,
-    baths: Number(property.baths) || 1,
-    area: Number(property.area) || 0,
     image:
       property.image?.trim() ||
       "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1200&auto=format&fit=crop",
-    highlights: Array.isArray(property.highlights)
-      ? property.highlights
-      : ["Verified Listing"],
     description:
       property.description?.trim() ||
       "Property details will be shared by the admin.",

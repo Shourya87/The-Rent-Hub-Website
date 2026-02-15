@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { usePropertiesContext } from "@/context/PropertiesContext";
-import { MapPin, BedDouble, Bath, Ruler, Phone, Heart } from "lucide-react";
+import { MapPin, Phone, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const renderInfoRows = (property) => {
@@ -75,21 +75,6 @@ export default function PropertyDetails() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-6 rounded-2xl border border-white/10 bg-white/5 p-6">
-            <div className="text-center">
-              <BedDouble className="mx-auto mb-2" size={22} />
-              <p className="font-semibold">{property.beds} Beds</p>
-            </div>
-            <div className="text-center">
-              <Bath className="mx-auto mb-2" size={22} />
-              <p className="font-semibold">{property.baths} Baths</p>
-            </div>
-            <div className="text-center">
-              <Ruler className="mx-auto mb-2" size={22} />
-              <p className="font-semibold">{property.area} sqft</p>
-            </div>
-          </div>
-
           <div>
             <h3 className="mb-3 text-xl font-semibold">Details</h3>
             <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200">
@@ -97,17 +82,6 @@ export default function PropertyDetails() {
                 <p key={row.label}>
                   <span className="font-semibold text-white">{row.label}:</span> {row.value}
                 </p>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-3 text-xl font-semibold">Why choose this property?</h3>
-            <div className="flex flex-wrap gap-3">
-              {property.highlights?.map((item, index) => (
-                <span key={index} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">
-                  {item}
-                </span>
               ))}
             </div>
           </div>
@@ -127,14 +101,6 @@ export default function PropertyDetails() {
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="mx-auto max-w-5xl px-6 pb-16">
-        <h2 className="mb-4 text-2xl font-bold">About this Property</h2>
-        <p className="leading-relaxed text-slate-300">
-          {property.description ||
-            "This premium verified property offers modern amenities, ample space, and is located in a prime locality with excellent connectivity and nearby essentials."}
-        </p>
       </div>
     </div>
   );

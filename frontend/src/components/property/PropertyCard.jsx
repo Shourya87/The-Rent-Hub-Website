@@ -32,21 +32,6 @@ export default function PropertyCard({ property }) {
           {property.location}
         </div>
 
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-300">
-          <div className="flex items-center gap-1">
-            <BedDouble size={16} />
-            {property.beds} Beds
-          </div>
-          <div className="flex items-center gap-1">
-            <Bath size={16} />
-            {property.baths} Baths
-          </div>
-          <div className="flex items-center gap-1">
-            <Ruler size={16} />
-            {property.area} sqft
-          </div>
-        </div>
-
         <Link
           to={`/property/${property.id}`}
           className="mt-6 block rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 py-3 text-center font-medium text-white"
