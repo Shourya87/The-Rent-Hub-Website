@@ -52,7 +52,7 @@ export default function AboutSection() {
         >
           The RentHub Company is built for speed, trust, and modern renters.<br />
           We directly connect tenants with verified property owners
-          — making renting smarter, safer, and stress-free.
+          — making renting smarter and stress-free.
         </p>
 
         {/* =============== Features Grid =============== */}
