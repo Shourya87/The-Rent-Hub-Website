@@ -6,7 +6,7 @@ const properties = [
     price: "35000",
     beds: 2,
     baths: 2,
-    area: 1200,
+    area: 120,
     image:
       "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?q=80&w=1200&auto=format&fit=crop",
     highlights: ["Verified", "Near Metro", "Gated Society"],
