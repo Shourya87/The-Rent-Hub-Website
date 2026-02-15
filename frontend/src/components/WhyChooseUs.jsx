@@ -49,7 +49,7 @@ export default function WhyChooseUs() {
                   index % 2 !== 0 ? "md:mt-8" : ""
                 }`}
               >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-r from-orange-500 to-pink-500 text-white">
                   <Icon size={20} />
                 </div>
                 <h3 className="text-xl font-semibold">{item.title}</h3>
