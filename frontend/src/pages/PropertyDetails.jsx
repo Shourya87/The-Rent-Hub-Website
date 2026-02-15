@@ -100,7 +100,7 @@ export default function PropertyDetails() {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button className="flex-1 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:opacity-90">
+            <Button className="flex-1 rounded-full bg-linear-to-r from-orange-500 to-pink-500 text-white hover:opacity-90">
               <Phone size={16} className="mr-2" />
               Contact Us
             </Button>

@@ -1,7 +1,10 @@
-import React from 'react'
+import { supabase } from "./supabaseClient"
 
-export default function PropertyService() {
-  return (
-    <div>PropertyService</div>
-  )
+export const getProperties = async () => {
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  return { data, error }
 }
