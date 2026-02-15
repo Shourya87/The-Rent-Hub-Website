@@ -4,7 +4,7 @@ import FeaturedProperties from "../components/FeaturedProperties";
 import WhyChooseUs from "../components/WhyChooseUs";
 import CTASection from "../components/CTASection";
 
-import { getProperties } from "../services/propertyService";
+import { getProperties } from "../services/PropertyService";
 
 export default function Home() {
 
