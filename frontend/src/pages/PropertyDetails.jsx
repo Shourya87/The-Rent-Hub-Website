@@ -3,6 +3,33 @@ import { usePropertiesContext } from "@/context/PropertiesContext";
 import { MapPin, BedDouble, Bath, Ruler, Phone, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const renderInfoRows = (property) => {
+  const type = property.propertyType || property.category || "Flat";
+
+  if (type === "PG") {
+    return [
+      { label: "Rent", value: property.details?.rent || property.price },
+      { label: "Sharing", value: property.details?.sharing || "N/A" },
+      { label: "Note", value: "Contact us for more details." },
+    ];
+  }
+
+  return [
+    { label: "Rent", value: property.details?.rent || property.price },
+    { label: "Location", value: property.details?.location || property.location },
+    { label: "Floor", value: property.details?.floor || "N/A" },
+    { label: "Size", value: property.details?.size || property.bhk || "N/A" },
+    { label: "Flat Type", value: property.details?.flatType || "N/A" },
+    { label: "Furnished", value: property.details?.furnished || "N/A" },
+    { label: "Availablity", value: property.details?.availability || "N/A" },
+    {
+      label: "For Student/Family/Girls/Boys/Working",
+      value: property.details?.occupancyFor || "N/A",
+    },
+    { label: "Note", value: "Contact us for more details." },
+  ];
+};
+
 export default function PropertyDetails() {
   const { id } = useParams();
   const { properties } = usePropertiesContext();
@@ -15,6 +42,8 @@ export default function PropertyDetails() {
       </div>
     );
   }
+
+  const detailRows = renderInfoRows(property);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -58,6 +87,17 @@ export default function PropertyDetails() {
             <div className="text-center">
               <Ruler className="mx-auto mb-2" size={22} />
               <p className="font-semibold">{property.area} sqft</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-xl font-semibold">Details</h3>
+            <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200">
+              {detailRows.map((row) => (
+                <p key={row.label}>
+                  <span className="font-semibold text-white">{row.label}:</span> {row.value}
+                </p>
+              ))}
             </div>
           </div>
 
