@@ -10,7 +10,7 @@ const renderInfoRows = (property) => {
     return [
       { label: "Rent", value: property.details?.rent || property.price },
       { label: "Sharing", value: property.details?.sharing || "N/A" },
-      { label: "Note", value: "Contact us for more details." },
+      { label: "Property Id", value: property.id },
     ];
   }
 
@@ -26,7 +26,8 @@ const renderInfoRows = (property) => {
       label: "For",
       value: property.details?.occupancyFor || "N/A",
     },
-    { label: "Note", value: "Contact us for more details." },
+    { label: "Posted On", value: property.details?.postedOn || "N/A" },
+    { label: "Property Id", value: property.id },
   ];
 };
 
@@ -77,12 +78,17 @@ export default function PropertyDetails() {
 
           <div>
             <h3 className="mb-3 text-xl font-semibold">Details</h3>
-            <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200">
+            <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-[15px] text-slate-200">
               {detailRows.map((row) => (
                 <p key={row.label}>
                   <span className="font-semibold text-white">{row.label}:</span> {row.value}
                 </p>
               ))}
+
+              <p className="mt-6 text-[16px] text-slate-400">
+                Contact us for more details.
+              </p>
+
             </div>
           </div>
 
