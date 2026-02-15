@@ -23,7 +23,7 @@ const renderInfoRows = (property) => {
     { label: "Furnished", value: property.details?.furnished || "N/A" },
     { label: "Availablity", value: property.details?.availability || "N/A" },
     {
-      label: "For Student/Family/Girls/Boys/Working",
+      label: "For",
       value: property.details?.occupancyFor || "N/A",
     },
     { label: "Note", value: "Contact us for more details." },
