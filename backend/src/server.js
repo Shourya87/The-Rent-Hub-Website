@@ -12,25 +12,28 @@ import {
 import { createAuthToken, requireAdminAuth } from "./middleware/auth.js";
 import { saveBase64Media, uploadsRoot } from "./utils/mediaStore.js";
 import errorHandler from "./middleware/errorHandler.middleware.js";
-import upload from "./middleware/multer.js"
+import upload from "./middleware/multer.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-const PORT = Number(process.env.PORT) || 3000;
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com")
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5174"
 
-const allowedOrigins = FRONTEND_ORIGIN.split(",").map((value) => value.trim()).filter(Boolean);
-const isAllowedOrigin = (origin) => allowedOrigins.includes(origin)
+const PORT = Number(process.env.PORT) || 3000;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@therenthub.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5174";
+
+const allowedOrigins = FRONTEND_ORIGIN.split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+const isAllowedOrigin = (origin) => allowedOrigins.includes(origin);
 
 app.use((request, response, next) => {
   const origin = request.headers.origin || "";
 
-  if (isAllowedOrigin(origin)) {
+  if (!origin || isAllowedOrigin(origin)) {
     response.header("Access-Control-Allow-Origin", origin || "*");
   }
 
@@ -46,7 +49,6 @@ app.use((request, response, next) => {
   next();
 });
 
-app.use(express.json({ limit: "50mb" }));
 app.use("/uploads", express.static(uploadsRoot));
 app.use("/", express.static(path.resolve(__dirname, "../public")));
 
@@ -64,29 +66,37 @@ app.post("/api/admin/login", (request, response) => {
   }
 
   response.json({
+    success: true,
     token: createAuthToken(),
     admin: { email: ADMIN_EMAIL },
   });
 });
 
-app.post("/api/upload", upload.fields([
-  {
-    name: "base64",
-    maxCount: 1,
-  }
-]), requireAdminAuth, async (request, response) => {
+app.post("/api/upload", requireAdminAuth, upload.single("base64"), async (request, response) => {
   try {
     const { base64, mimeType, mediaType, originalName } = request.body || {};
 
     let fileData = base64;
+    let resolvedMimeType = mimeType;
+    let resolvedOriginalName = originalName;
 
-    if (request.files) {
-      if (request.files.base64?.[0]) {
-        fileData = request.files.base64?.[0].path;
-      }
+    if (request.file?.buffer) {
+      fileData = request.file.buffer.toString("base64");
+      resolvedMimeType = request.file.mimetype || mimeType;
+      resolvedOriginalName = request.file.originalname || originalName;
     }
 
-    const saved = await saveBase64Media({ base64: fileData, mimeType, mediaType, originalName });
+    if (!fileData) {
+      response.status(400).json({ message: "Missing media payload." });
+      return;
+    }
+
+    const saved = await saveBase64Media({
+      base64: fileData,
+      mimeType: resolvedMimeType,
+      mediaType,
+      originalName: resolvedOriginalName,
+    });
 
     response.status(201).json({
       success: true,
@@ -97,6 +107,7 @@ app.post("/api/upload", upload.fields([
     });
   } catch (error) {
     response.status(400).json({
+      success: false,
       message: error instanceof Error ? error.message : "Unable to upload media.",
     });
   }
@@ -147,7 +158,7 @@ app.delete("/api/properties/:id", requireAdminAuth, async (request, response) =>
   response.status(204).end();
 });
 
-app.use(errorHandler)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);

@@ -20,13 +20,26 @@ export const setStoredAdminToken = (token) => {
   localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
 };
 
+const authHeader = () => {
+  const token = getStoredAdminToken();
+
+  if (!token) {
+    throw new Error("Your admin session expired. Please login again.");
+  }
+
+  return { Authorization: `Bearer ${token}` };
+};
+
 const request = async (path, options = {}) => {
+  const isFormDataBody = options.body instanceof FormData;
+  const defaultHeaders = isFormDataBody ? {} : { "Content-Type": "application/json" };
+
   const response = await fetch(buildUrl(path), {
+    ...options,
     headers: {
-      "Content-Type": "application/json",
+      ...defaultHeaders,
       ...(options.headers || {}),
     },
-    ...options,
   });
 
   if (response.status === 204) {
@@ -42,18 +55,6 @@ const request = async (path, options = {}) => {
   return payload;
 };
 
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      const base64 = result.includes(",") ? result.split(",")[1] : "";
-      resolve(base64);
-    };
-    reader.onerror = () => reject(new Error("Unable to read selected file."));
-    reader.readAsDataURL(file);
-  });
-
 export const apiClient = {
   getProperties: async () => {
     const payload = await request("/api/properties");
@@ -62,7 +63,7 @@ export const apiClient = {
   createProperty: async (property) => {
     const payload = await request("/api/properties", {
       method: "POST",
-      headers: { Authorization: `Bearer ${getStoredAdminToken()}` },
+      headers: authHeader(),
       body: JSON.stringify(property),
     });
 
@@ -71,7 +72,7 @@ export const apiClient = {
   updateProperty: async (id, property) => {
     const payload = await request(`/api/properties/${id}`, {
       method: "PUT",
-      headers: { Authorization: `Bearer ${getStoredAdminToken()}` },
+      headers: authHeader(),
       body: JSON.stringify(property),
     });
 
@@ -80,7 +81,7 @@ export const apiClient = {
   deleteProperty: async (id) => {
     await request(`/api/properties/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${getStoredAdminToken()}` },
+      headers: authHeader(),
     });
   },
   adminLogin: async ({ email, password }) => {
@@ -89,20 +90,23 @@ export const apiClient = {
       body: JSON.stringify({ email, password }),
     });
 
+    if (!payload?.token) {
+      throw new Error("Login succeeded but token was not returned by server.");
+    }
+
     return payload;
   },
   uploadMedia: async (file, mediaType = "image") => {
-    const base64 = await fileToBase64(file);
+    const formData = new FormData();
+    formData.append("base64", file);
+    formData.append("mimeType", file.type || "");
+    formData.append("originalName", file.name || "media");
+    formData.append("mediaType", mediaType);
 
     const payload = await request("/api/upload", {
       method: "POST",
-      headers: { Authorization: `Bearer ${getStoredAdminToken()}` },
-      body: JSON.stringify({
-        base64,
-        mimeType: file.type,
-        originalName: file.name,
-        mediaType,
-      }),
+      headers: authHeader(),
+      body: formData,
     });
 
     return payload?.data;
