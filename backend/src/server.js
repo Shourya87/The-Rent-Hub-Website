@@ -11,20 +11,26 @@ import {
 } from "./utils/propertyStore.js";
 import { createAuthToken, requireAdminAuth } from "./middleware/auth.js";
 import { saveBase64Media, uploadsRoot } from "./utils/mediaStore.js";
+import errorHandler from "./middleware/errorHandler.middleware.js";
+import upload from "./middleware/multer.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 const PORT = Number(process.env.PORT) || 4000;
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com")
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173"
 
+const isAllowedOrigin = (origin) => FRONTEND_ORIGIN.includes(origin)
+
 app.use((request, response, next) => {
   const origin = request.headers.origin || "";
 
   if (isAllowedOrigin(origin)) {
-    response.header("Access-Control-Allow-Origin", origin || allowedOrigins[0] || "*");
+    response.header("Access-Control-Allow-Origin", origin || "*");
   }
 
   response.header("Vary", "Origin");
@@ -62,10 +68,24 @@ app.post("/api/admin/login", (request, response) => {
   });
 });
 
-app.post("/api/upload", requireAdminAuth, async (request, response) => {
+app.post("/api/upload", upload.fields([
+  {
+    name: "base64",
+    maxCount: 1,
+  }
+]), requireAdminAuth, async (request, response) => {
   try {
     const { base64, mimeType, mediaType, originalName } = request.body || {};
-    const saved = await saveBase64Media({ base64, mimeType, mediaType, originalName });
+
+    let fileData = base64;
+
+    if (request.files) {
+      if (request.files.base64?.[0]) {
+        fileData = request.files.base64?.[0].path;
+      }
+    }
+
+    const saved = await saveBase64Media({ base64: fileData, mimeType, mediaType, originalName });
 
     response.status(201).json({
       data: {
@@ -124,6 +144,8 @@ app.delete("/api/properties/:id", requireAdminAuth, async (request, response) =>
 
   response.status(204).end();
 });
+
+app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
