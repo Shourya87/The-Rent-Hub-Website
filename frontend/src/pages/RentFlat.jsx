@@ -18,7 +18,9 @@ const locationsList = [
   "Techzone 4",
 ];
 
-const bhkOptions = ["1 BHK", "2 BHK", "3 BHK", "4+ BHK"];
+const bhkOptions = ["1 BHK", "2 BHK", "3 BHK", "4+ BHK", "PG"];
+
+const normalizeBhk = (value = "") => value.replace(/\s+/g, "").toLowerCase();
 
 export default function Rent() {
   const { properties } = usePropertiesContext();
@@ -36,9 +38,10 @@ export default function Rent() {
 
   const filteredProperties = useMemo(() => {
     let result = properties.filter((property) => {
+      const propertyBhk = normalizeBhk(property.bhk || `${property.beds} BHK`);
       const matchBHK =
         selectedBHK.length > 0
-          ? selectedBHK.includes(property.bhk)
+          ? selectedBHK.some((item) => normalizeBhk(item) === propertyBhk)
           : true;
 
       const matchLocation =

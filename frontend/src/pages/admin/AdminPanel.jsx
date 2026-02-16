@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePropertiesContext } from "../../context/PropertiesContext";
 import { CORE_ENTRY_PATH } from "@/constants/adminAccess";
 import { adminAuth } from "@/services/adminAuth";
+import { apiClient } from "@/services/apiClient";
 
 const CONTACT_NOTE = "Contact us for more details.";
 
@@ -65,6 +66,11 @@ export default function AdminPanel() {
   const { properties, addProperty, updateProperty, deleteProperty } = usePropertiesContext();
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [uploading, setUploading] = useState({ image: false, video: false });
+  const [uploadError, setUploadError] = useState("");
+  const [runtimeSupabaseUrl, setRuntimeSupabaseUrl] = useState("");
+  const [runtimeAnonKey, setRuntimeAnonKey] = useState("");
+  const [runtimeConfigSaved, setRuntimeConfigSaved] = useState(false);
   const navigate = useNavigate();
 
   const sortedProperties = useMemo(() => [...properties].sort((a, b) => b.id - a.id), [properties]);
@@ -76,11 +82,58 @@ export default function AdminPanel() {
 
   const resetForm = () => {
     setEditingId(null);
+    setUploadError("");
     setForm(emptyForm);
+  };
+
+  const saveRuntimeConfig = (event) => {
+    event.preventDefault();
+
+    if (!runtimeSupabaseUrl.trim() || !runtimeAnonKey.trim()) {
+      setUploadError("Please enter both Supabase URL and anon key.");
+      return;
+    }
+
+    supabase.storage.setRuntimeConfig({
+      url: runtimeSupabaseUrl,
+      anonKey: runtimeAnonKey,
+    });
+
+    setRuntimeConfigSaved(true);
+    setUploadError("");
+    window.location.reload();
+  };
+
+  const handleFileUpload = async (event) => {
+    const { name, files } = event.target;
+    const file = files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const mediaType = name === "video" ? "video" : "image";
+    setUploadError("");
+    setUploading((prev) => ({ ...prev, [name]: true }));
+
+    try {
+      const uploaded = await apiClient.uploadMedia(file, mediaType);
+      setForm((prev) => ({ ...prev, [name]: uploaded?.url || "" }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : `Unable to upload ${mediaType}.`);
+    } finally {
+      setUploading((prev) => ({ ...prev, [name]: false }));
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (uploading.image || uploading.video) {
+      setUploadError("Please wait for file upload to complete.");
+      return;
+    }
+
     const isPG = form.propertyType === "PG";
 
     const payload = {
@@ -147,7 +200,7 @@ export default function AdminPanel() {
       location: property.location,
       image: property.image,
       video: property.video || property.details?.video || "",
-      highlights: property.highlights.join(", "),
+      highlights: Array.isArray(property.highlights) ? property.highlights.join(", ") : "",
       featured: Boolean(property.featured),
       flatRent: propertyType === "Flat" ? String(property.details?.rent || property.price || "") : "",
       floor: property.details?.floor || "",
@@ -180,6 +233,34 @@ export default function AdminPanel() {
         <section className="rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold text-white">{editingId ? "Edit Property" : "Add New Property"}</h2>
 
+          {uploadError ? <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{uploadError}</p> : null}
+          {storageConfigError ? (
+            <div className="mb-4 space-y-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-xs text-amber-100">
+              <p>
+                Deployment env missing: <span className="font-medium">VITE_SUPABASE_URL</span> and <span className="font-medium">VITE_SUPABASE_ANON_KEY</span>.
+                If Vercel env already set, redeploy project. You can also set runtime values below for immediate testing.
+              </p>
+              <form onSubmit={saveRuntimeConfig} className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                <input
+                  value={runtimeSupabaseUrl}
+                  onChange={(event) => setRuntimeSupabaseUrl(event.target.value)}
+                  placeholder="Supabase URL (https://xxxx.supabase.co)"
+                  className="rounded border border-amber-300/30 bg-black/40 px-2 py-2 text-xs text-white"
+                />
+                <input
+                  value={runtimeAnonKey}
+                  onChange={(event) => setRuntimeAnonKey(event.target.value)}
+                  placeholder="Supabase anon key"
+                  className="rounded border border-amber-300/30 bg-black/40 px-2 py-2 text-xs text-white"
+                />
+                <button type="submit" className="w-fit rounded border border-amber-300/40 px-3 py-1 text-xs font-medium text-amber-100 md:col-span-2">
+                  Save runtime config
+                </button>
+              </form>
+              {runtimeConfigSaved ? <p className="text-green-200">Runtime config saved. Reloading...</p> : null}
+            </div>
+          ) : null}
+
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input name="title" value={form.title} onChange={onChange} required placeholder="Property title" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
             <select name="propertyType" value={form.propertyType} onChange={onChange} className="rounded-lg border border-white/20 bg-black px-3 py-2" required>
@@ -188,8 +269,20 @@ export default function AdminPanel() {
             </select>
 
             <input name="location" value={form.location} onChange={onChange} required placeholder="Location" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
-            <input name="image" value={form.image} onChange={onChange} placeholder="Image URL" className="rounded-lg border border-white/20 bg-black px-3 py-2" required />
-            <input name="video" value={form.video} onChange={onChange} placeholder="Video URL (optional)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
+
+            <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
+              <label className="mb-1 block text-xs text-slate-400">Property Image (Upload from mobile/desktop)</label>
+              <input type="file" name="image" accept="image/*" onChange={handleFileUpload} className="w-full text-sm" />
+              {uploading.image ? <p className="mt-1 text-xs text-yellow-300">Uploading image...</p> : null}
+              {!uploading.image && form.image ? <p className="mt-1 text-xs text-green-400">Image uploaded successfully</p> : null}
+            </div>
+
+            <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
+              <label className="mb-1 block text-xs text-slate-400">Property Video (Upload from mobile/desktop)</label>
+              <input type="file" name="video" accept="video/*" onChange={handleFileUpload} className="w-full text-sm" />
+              {uploading.video ? <p className="mt-1 text-xs text-yellow-300">Uploading video...</p> : null}
+              {!uploading.video && form.video ? <p className="mt-1 text-xs text-green-400">Video uploaded successfully</p> : null}
+            </div>
             <input name="highlights" value={form.highlights} onChange={onChange} placeholder="Highlights (comma separated)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
 
             {form.propertyType === "Flat" ? (
