@@ -16,21 +16,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
-<<<<<<< HEAD
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com")
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173"
-=======
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com").trim().toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-const allowedOrigins = FRONTEND_ORIGIN.split(",").map((item) => item.trim()).filter(Boolean);
-
-const isAllowedOrigin = (origin = "") => {
-  if (!origin) return true;
-  return allowedOrigins.includes(origin);
-};
->>>>>>> 6d74290cb88c965efc30e004b0ee0fa9ddacaffa
 
 app.use((request, response, next) => {
   const origin = request.headers.origin || "";
