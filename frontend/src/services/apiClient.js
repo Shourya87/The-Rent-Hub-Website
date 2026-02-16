@@ -42,6 +42,18 @@ const request = async (path, options = {}) => {
   return payload;
 };
 
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const base64 = result.includes(",") ? result.split(",")[1] : "";
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error("Unable to read selected file."));
+    reader.readAsDataURL(file);
+  });
+
 export const apiClient = {
   getProperties: async () => {
     const payload = await request("/api/properties");
@@ -78,5 +90,21 @@ export const apiClient = {
     });
 
     return payload;
+  },
+  uploadMedia: async (file, mediaType = "image") => {
+    const base64 = await fileToBase64(file);
+
+    const payload = await request("/api/upload", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${getStoredAdminToken()}` },
+      body: JSON.stringify({
+        base64,
+        mimeType: file.type,
+        originalName: file.name,
+        mediaType,
+      }),
+    });
+
+    return payload?.data;
   },
 };

@@ -1,21 +1,39 @@
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   createProperty,
   deletePropertyById,
   getPropertyById,
   listProperties,
   updatePropertyById,
+  getStorageMode,
 } from "./utils/propertyStore.js";
 import { createAuthToken, requireAdminAuth } from "./middleware/auth.js";
+import { saveBase64Media, uploadsRoot } from "./utils/mediaStore.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com").trim().toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+const allowedOrigins = FRONTEND_ORIGIN.split(",").map((item) => item.trim()).filter(Boolean);
+
+const isAllowedOrigin = (origin = "") => {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin);
+};
 
 app.use((request, response, next) => {
-  response.header("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
+  const origin = request.headers.origin || "";
+
+  if (isAllowedOrigin(origin)) {
+    response.header("Access-Control-Allow-Origin", origin || allowedOrigins[0] || "*");
+  }
+
+  response.header("Vary", "Origin");
   response.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   response.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
@@ -27,10 +45,12 @@ app.use((request, response, next) => {
   next();
 });
 
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use("/uploads", express.static(uploadsRoot));
+app.use("/", express.static(path.resolve(__dirname, "../public")));
 
 app.get("/api/health", (_request, response) => {
-  response.json({ ok: true });
+  response.json({ ok: true, storage: getStorageMode() });
 });
 
 app.post("/api/admin/login", (request, response) => {
@@ -44,10 +64,26 @@ app.post("/api/admin/login", (request, response) => {
 
   response.json({
     token: createAuthToken(),
-    admin: {
-      email: ADMIN_EMAIL,
-    },
+    admin: { email: ADMIN_EMAIL },
   });
+});
+
+app.post("/api/upload", requireAdminAuth, async (request, response) => {
+  try {
+    const { base64, mimeType, mediaType, originalName } = request.body || {};
+    const saved = await saveBase64Media({ base64, mimeType, mediaType, originalName });
+
+    response.status(201).json({
+      data: {
+        ...saved,
+        url: `${request.protocol}://${request.get("host")}${saved.urlPath}`,
+      },
+    });
+  } catch (error) {
+    response.status(400).json({
+      message: error instanceof Error ? error.message : "Unable to upload media.",
+    });
+  }
 });
 
 app.get("/api/properties", async (_request, response) => {

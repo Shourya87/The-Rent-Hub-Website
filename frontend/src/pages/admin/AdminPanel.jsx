@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePropertiesContext } from "../../context/PropertiesContext";
 import { CORE_ENTRY_PATH } from "@/constants/adminAccess";
 import { adminAuth } from "@/services/adminAuth";
+import { apiClient } from "@/services/apiClient";
 
 const CONTACT_NOTE = "Contact us for more details.";
 
@@ -76,11 +77,40 @@ export default function AdminPanel() {
 
   const resetForm = () => {
     setEditingId(null);
+    setUploadError("");
     setForm(emptyForm);
+  };
+
+  const handleFileUpload = async (event) => {
+    const { name, files } = event.target;
+    const file = files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const mediaType = name === "video" ? "video" : "image";
+    setUploadError("");
+    setUploading((prev) => ({ ...prev, [name]: true }));
+
+    try {
+      const uploaded = await apiClient.uploadMedia(file, mediaType);
+      setForm((prev) => ({ ...prev, [name]: uploaded?.url || "" }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : `Unable to upload ${mediaType}.`);
+    } finally {
+      setUploading((prev) => ({ ...prev, [name]: false }));
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (uploading.image || uploading.video) {
+      setUploadError("Please wait for file upload to complete.");
+      return;
+    }
+
     const isPG = form.propertyType === "PG";
 
     const payload = {
@@ -147,7 +177,7 @@ export default function AdminPanel() {
       location: property.location,
       image: property.image,
       video: property.video || property.details?.video || "",
-      highlights: property.highlights.join(", "),
+      highlights: Array.isArray(property.highlights) ? property.highlights.join(", ") : "",
       featured: Boolean(property.featured),
       flatRent: propertyType === "Flat" ? String(property.details?.rent || property.price || "") : "",
       floor: property.details?.floor || "",
@@ -180,6 +210,8 @@ export default function AdminPanel() {
         <section className="rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold text-white">{editingId ? "Edit Property" : "Add New Property"}</h2>
 
+          {uploadError ? <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{uploadError}</p> : null}
+
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input name="title" value={form.title} onChange={onChange} required placeholder="Property title" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
             <select name="propertyType" value={form.propertyType} onChange={onChange} className="rounded-lg border border-white/20 bg-black px-3 py-2" required>
@@ -188,8 +220,20 @@ export default function AdminPanel() {
             </select>
 
             <input name="location" value={form.location} onChange={onChange} required placeholder="Location" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
-            <input name="image" value={form.image} onChange={onChange} placeholder="Image URL" className="rounded-lg border border-white/20 bg-black px-3 py-2" required />
-            <input name="video" value={form.video} onChange={onChange} placeholder="Video URL (optional)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
+
+            <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
+              <label className="mb-1 block text-xs text-slate-400">Property Image (Upload from mobile/desktop)</label>
+              <input type="file" name="image" accept="image/*" onChange={handleFileUpload} className="w-full text-sm" />
+              {uploading.image ? <p className="mt-1 text-xs text-yellow-300">Uploading image...</p> : null}
+              {!uploading.image && form.image ? <p className="mt-1 text-xs text-green-400">Image uploaded successfully</p> : null}
+            </div>
+
+            <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
+              <label className="mb-1 block text-xs text-slate-400">Property Video (Upload from mobile/desktop)</label>
+              <input type="file" name="video" accept="video/*" onChange={handleFileUpload} className="w-full text-sm" />
+              {uploading.video ? <p className="mt-1 text-xs text-yellow-300">Uploading video...</p> : null}
+              {!uploading.video && form.video ? <p className="mt-1 text-xs text-green-400">Video uploaded successfully</p> : null}
+            </div>
             <input name="highlights" value={form.highlights} onChange={onChange} placeholder="Highlights (comma separated)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
 
             {form.propertyType === "Flat" ? (
