@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { usePropertiesContext } from "@/context/PropertiesContext";
+import { usePropertiesContext } from "../context/PropertiesContext";
 
 const useProperties = (filters) => {
   const { properties } = usePropertiesContext();

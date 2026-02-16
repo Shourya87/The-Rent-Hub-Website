@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { usePropertiesContext } from "@/context/PropertiesContext";
+import { usePropertiesContext } from "../context/PropertiesContext";
 import { MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -74,13 +74,13 @@ Please share more details.
                 <video
                   src={property.video}
                   controls
-                  className="h-full max-h-[32rem] min-h-[20rem] w-full rounded-3xl object-cover"
+                  className="h-full max-h-128 min-h-80 w-full rounded-3xl object-cover"
                 />
               ) : (
                 <img
                   src={property.image}
                   alt={`${property.title} primary preview`}
-                  className="h-full max-h-[32rem] min-h-[20rem] w-full rounded-3xl object-cover"
+                  className="h-full max-h-128 min-h-80 w-full rounded-3xl object-cover"
                 />
               )}
             </div>
@@ -91,7 +91,7 @@ Please share more details.
                   <img
                     src={imageSrc}
                     alt={`${property.title} image ${idx + 1}`}
-                    className="h-full min-h-[9.5rem] w-full object-cover"
+                    className="h-full min-h-38 w-full object-cover"
                   />
                 </div>
               ))}

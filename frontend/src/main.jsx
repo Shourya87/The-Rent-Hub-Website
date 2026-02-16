@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
-import { PropertiesProvider } from "@/context/PropertiesContext";
+import { PropertiesProvider } from "./context/PropertiesContext.jsx";
+
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

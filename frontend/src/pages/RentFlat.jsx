@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { usePropertiesContext } from "@/context/PropertiesContext";
+import { usePropertiesContext } from "../context/PropertiesContext";
 import PropertyCard from "@/components/property/PropertyCard";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -104,7 +104,7 @@ export default function Rent() {
 
           <button
             onClick={() => setOpenFilter(!openFilter)}
-            className="flex items-center gap-2 text-sm bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 rounded-md"
+            className="flex items-center gap-2 text-sm bg-linear-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 rounded-md"
           >
             <SlidersHorizontal size={16} />
             Filters
@@ -273,7 +273,7 @@ export default function Rent() {
             </button>
             <button
               onClick={() => setOpenFilter(false)}
-              className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 text-xs rounded-md"
+              className="bg-linear-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 text-xs rounded-md"
             >
               Apply
             </button>

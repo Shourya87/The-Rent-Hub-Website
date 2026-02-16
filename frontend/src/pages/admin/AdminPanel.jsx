@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePropertiesContext } from "@/context/PropertiesContext";
+import { usePropertiesContext } from "../../context/PropertiesContext";
 import { CORE_ENTRY_PATH } from "@/constants/adminAccess";
 import { supabase } from "@/services/supabaseClient";
 

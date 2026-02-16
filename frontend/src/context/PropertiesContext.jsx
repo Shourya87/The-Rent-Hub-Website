@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import initialProperties from "@/data/Properties";
-
-const STORAGE_KEY = "renthub_properties_v1";
+import { supabase } from "@/lib/supabase";
 
 const PropertiesContext = createContext(null);
 
 const normalizeProperty = (property, fallbackId) => {
   const beds = Number(property.beds) || 1;
-  const propertyType = property.propertyType?.trim() || property.category?.trim() || "Flat";
+  const propertyType =
+    property.propertyType?.trim() || property.category?.trim() || "Flat";
 
   return {
     id: Number(property.id) || fallbackId,
@@ -30,56 +30,74 @@ const normalizeProperty = (property, fallbackId) => {
 };
 
 export function PropertiesProvider({ children }) {
-  const [properties, setProperties] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        return initialProperties.map((property, index) =>
-          normalizeProperty(property, index + 1),
-        );
-      }
-
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) {
-        return initialProperties.map((property, index) =>
-          normalizeProperty(property, index + 1),
-        );
-      }
-
-      return parsed.map((property, index) =>
-        normalizeProperty(property, property.id || index + 1),
-      );
-    } catch {
-      return initialProperties.map((property, index) =>
-        normalizeProperty(property, index + 1),
-      );
-    }
-  });
+  const [properties, setProperties] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
-  }, [properties]);
+    const fetchProperties = async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .order("id", { ascending: false });
 
-  const value = useMemo(() => {
-    const addProperty = (payload) => {
-      setProperties((prev) => {
-        const maxId = prev.reduce((acc, item) => Math.max(acc, item.id), 0);
-        const nextProperty = normalizeProperty(payload, maxId + 1);
-        return [nextProperty, ...prev];
-      });
-    };
+      if (error) {
+        console.error(error.message);
+        return;
+      }
 
-    const updateProperty = (id, payload) => {
-      setProperties((prev) =>
-        prev.map((property) =>
-          property.id === id
-            ? normalizeProperty({ ...property, ...payload }, property.id)
-            : property,
+      setProperties(
+        data.map((property, index) =>
+          normalizeProperty(property, property.id || index + 1),
         ),
       );
     };
 
-    const deleteProperty = (id) => {
+    fetchProperties();
+  }, []);
+
+  const value = useMemo(() => {
+    const addProperty = async (payload) => {
+      const normalized = normalizeProperty(payload);
+
+      const { data, error } = await supabase
+        .from("properties")
+        .insert([normalized])
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error.message);
+        return;
+      }
+
+      setProperties((prev) => [data, ...prev]);
+    };
+
+    const updateProperty = async (id, payload) => {
+      const { data, error } = await supabase
+        .from("properties")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error.message);
+        return;
+      }
+
+      setProperties((prev) =>
+        prev.map((property) => (property.id === id ? data : property)),
+      );
+    };
+
+    const deleteProperty = async (id) => {
+      const { error } = await supabase.from("properties").delete().eq("id", id);
+
+      if (error) {
+        console.error(error.message);
+        return;
+      }
+
       setProperties((prev) => prev.filter((property) => property.id !== id));
     };
 
@@ -92,7 +110,9 @@ export function PropertiesProvider({ children }) {
   }, [properties]);
 
   return (
-    <PropertiesContext.Provider value={value}>{children}</PropertiesContext.Provider>
+    <PropertiesContext.Provider value={value}>
+      {children}
+    </PropertiesContext.Provider>
   );
 }
 
@@ -101,7 +121,9 @@ export function usePropertiesContext() {
   const context = useContext(PropertiesContext);
 
   if (!context) {
-    throw new Error("usePropertiesContext must be used inside PropertiesProvider");
+    throw new Error(
+      "usePropertiesContext must be used inside PropertiesProvider",
+    );
   }
 
   return context;
