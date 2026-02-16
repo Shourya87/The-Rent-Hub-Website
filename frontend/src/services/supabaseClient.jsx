@@ -1,7 +1,8 @@
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const rawSupabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const STORAGE_KEY = "renthub_supabase_session";
+const RUNTIME_CONFIG_KEY = "renthub_supabase_runtime_config";
 const listeners = new Set();
 
 const normalizeSupabaseUrl = (value) => {
@@ -24,20 +25,125 @@ const normalizeSupabaseUrl = (value) => {
   return `https://${cleanedValue}.supabase.co`;
 };
 
-const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
+const readRuntimeConfig = () => {
+  try {
+    const raw = localStorage.getItem(RUNTIME_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getSupabaseUrl = () => normalizeSupabaseUrl(rawSupabaseUrl || readRuntimeConfig()?.url || "");
+const getSupabaseAnonKey = () => (rawSupabaseAnonKey || readRuntimeConfig()?.anonKey || "").trim();
+
+const persistRuntimeConfig = ({ url = "", anonKey = "" }) => {
+  const nextConfig = {
+    url: String(url || "").trim(),
+    anonKey: String(anonKey || "").trim(),
+  };
+
+  localStorage.setItem(RUNTIME_CONFIG_KEY, JSON.stringify(nextConfig));
+};
+
+const defaultStorageBucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET?.trim() || "property-media";
+
+const sanitizeFileName = (name = "") =>
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "file";
+
+const encodeStoragePath = (path) =>
+  path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+const uploadFileToStorage = async ({ bucket = defaultStorageBucket, path, file, upsert = true }) => {
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    return { data: null, error: { message: configError } };
+  }
+
+  const currentSession = readSession();
+  const encodedPath = encodeStoragePath(path);
+  const uploadUrl = `${getSupabaseUrl()}/storage/v1/object/${bucket}/${encodedPath}`;
+
+  const baseHeaders = {
+    apikey: getSupabaseAnonKey(),
+    "Content-Type": file.type || "application/octet-stream",
+  };
+
+  const authHeaders = currentSession?.access_token
+    ? { Authorization: `Bearer ${currentSession.access_token}` }
+    : {};
+
+  let response;
+
+  try {
+    response = await fetch(`${uploadUrl}?upsert=${upsert ? "true" : "false"}`, {
+      method: "POST",
+      headers: {
+        ...baseHeaders,
+        ...authHeaders,
+      },
+      body: file,
+    });
+  } catch (error) {
+    return {
+      data: null,
+      error: {
+        message:
+          error instanceof Error
+            ? `Unable to upload media to Supabase Storage: ${error.message}`
+            : "Unable to upload media to Supabase Storage.",
+      },
+    };
+  }
+
+  const payload = await parseResponseBody(response);
+
+  if (!response.ok) {
+    return {
+      data: null,
+      error: {
+        message:
+          payload?.error ||
+          payload?.message ||
+          payload?.msg ||
+          `Upload failed (${response.status})`,
+      },
+    };
+  }
+
+  const publicUrl = `${getSupabaseUrl()}/storage/v1/object/public/${bucket}/${encodedPath}`;
+
+  return {
+    data: {
+      ...payload,
+      path,
+      bucket,
+      publicUrl,
+    },
+    error: null,
+  };
+};
 
 const getSupabaseConfigError = () => {
-  if (!rawSupabaseUrl?.trim()) {
+  if (!getSupabaseUrl()) {
     return "Missing VITE_SUPABASE_URL environment variable.";
   }
 
   try {
-    new URL(supabaseUrl);
+    new URL(getSupabaseUrl());
   } catch {
     return "Invalid VITE_SUPABASE_URL. Use the full Supabase project URL or project ref.";
   }
 
-  if (!supabaseAnonKey) {
+  if (!getSupabaseAnonKey()) {
     return "Missing VITE_SUPABASE_ANON_KEY environment variable.";
   }
 
@@ -82,7 +188,7 @@ const notifyAuthChange = (event, session) => {
 
 const buildHeaders = (withAuth = false) => {
   const headers = {
-    apikey: supabaseAnonKey,
+    apikey: getSupabaseAnonKey(),
     "Content-Type": "application/json",
   };
 
@@ -145,7 +251,7 @@ const signInWithPassword = async ({ email, password }) => {
   let response;
 
   try {
-    response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    response = await fetch(`${getSupabaseUrl()}/auth/v1/token?grant_type=password`, {
       method: "POST",
       headers: buildHeaders(),
       body: JSON.stringify({ email, password }),
@@ -189,7 +295,7 @@ const signInWithOtp = async ({ email, options = {} }) => {
   let response;
 
   try {
-    response = await fetch(`${supabaseUrl}/auth/v1/otp`, {
+    response = await fetch(`${getSupabaseUrl()}/auth/v1/otp`, {
       method: "POST",
       headers: buildHeaders(),
       body: JSON.stringify({
@@ -229,7 +335,7 @@ const signOut = async () => {
   const currentSession = readSession();
 
   try {
-    await fetch(`${supabaseUrl}/auth/v1/logout`, {
+    await fetch(`${getSupabaseUrl()}/auth/v1/logout`, {
       method: "POST",
       headers: {
         ...buildHeaders(),
@@ -269,6 +375,24 @@ export const supabase = {
     signOut,
     onAuthStateChange,
   },
+  storage: {
+    getConfigError() {
+      return getSupabaseConfigError();
+    },
+    setRuntimeConfig(config) {
+      persistRuntimeConfig(config);
+    },
+    async uploadPropertyMedia(file, mediaType = "image") {
+      const extension = file.name.includes(".")
+        ? file.name.split(".").pop()?.toLowerCase()
+        : "bin";
+      const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ""));
+      const timestamp = Date.now();
+      const path = `${mediaType}/${timestamp}-${safeName}.${extension || "bin"}`;
+
+      return uploadFileToStorage({ file, path });
+    },
+  },
   rest: {
     async get(path) {
       const configError = getSupabaseConfigError();
@@ -279,7 +403,7 @@ export const supabase = {
       let response;
 
       try {
-        response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
+        response = await fetch(`${getSupabaseUrl()}/rest/v1/${path}`, {
           headers: buildHeaders(true),
         });
       } catch {
