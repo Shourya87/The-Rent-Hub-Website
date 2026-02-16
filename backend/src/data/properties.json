@@ -1,0 +1,76 @@
+[
+  {
+    "id": 1,
+    "title": "Modern 2BHK Apartment",
+    "location": "Bandra West, Mumbai",
+    "price": 35000,
+    "beds": 2,
+    "baths": 2,
+    "area": 1200,
+    "image": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?q=80&w=1200&auto=format&fit=crop",
+    "video": "",
+    "highlights": [
+      "Verified",
+      "Near Metro",
+      "Gated Society"
+    ],
+    "description": "Beautifully maintained 2BHK apartment with modern interiors, excellent ventilation, and premium fittings.",
+    "featured": true,
+    "bhk": "2BHK",
+    "category": "Flat",
+    "propertyType": "Flat",
+    "details": {
+      "rent": "35000",
+      "location": "Bandra West, Mumbai",
+      "floor": "3rd",
+      "size": "2BHK",
+      "flatType": "Apartment",
+      "furnished": "Semi-Furnished",
+      "availability": "Immediate",
+      "occupancyFor": "Family",
+      "contactNote": "Contact us for more details.",
+      "postedOn": "2026-02-16",
+      "propertyId": "TRH-001",
+      "video": ""
+    },
+    "createdAt": "2026-02-16T00:00:00.000Z",
+    "updatedAt": "2026-02-16T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "Luxury Studio Flat",
+    "location": "Sector 62, Noida",
+    "price": 18000,
+    "beds": 1,
+    "baths": 1,
+    "area": 650,
+    "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop",
+    "video": "",
+    "highlights": [
+      "Fully Furnished",
+      "IT Hub Nearby",
+      "Secure Building"
+    ],
+    "description": "Compact yet luxurious studio apartment ideal for working professionals with modern furnishing.",
+    "featured": false,
+    "bhk": "1RK",
+    "category": "Flat",
+    "propertyType": "Flat",
+    "details": {
+      "rent": "18000",
+      "location": "Sector 62, Noida",
+      "floor": "2nd",
+      "size": "1RK",
+      "flatType": "Studio",
+      "furnished": "Fully Furnished",
+      "availability": "Immediate",
+      "occupancyFor": "Working",
+      "contactNote": "Contact us for more details.",
+      "postedOn": "2026-02-16",
+      "propertyId": "TRH-002",
+      "video": ""
+    },
+    "createdAt": "2026-02-16T00:00:00.000Z",
+    "updatedAt": "2026-02-16T00:00:00.000Z"
+  }
+]

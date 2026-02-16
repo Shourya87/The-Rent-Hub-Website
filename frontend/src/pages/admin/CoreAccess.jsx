@@ -1,38 +1,16 @@
-import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { supabase } from "@/services/supabaseClient";
+import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { apiClient } from "@/services/apiClient";
+import { adminAuth } from "@/services/adminAuth";
 import { ADMIN_PANEL_PATH } from "@/constants/adminAccess";
 
 export default function CoreAccess() {
-  const [form, setForm] = useState({ email: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkedSession, setCheckedSession] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.setSessionFromUrl();
-      const activeSession = data?.session || (await supabase.auth.getSession()).data?.session;
-      setIsAuthenticated(Boolean(activeSession));
-      setCheckedSession(true);
-    };
-
-    checkSession();
-  }, []);
-
-  if (!checkedSession) {
-    return (
-      <div className="min-h-screen bg-black px-4 py-24">
-        <div className="mx-auto max-w-md rounded-2xl border bg-black p-8 shadow-sm">
-          <p className="text-center text-slate-300">Checking access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
+  if (adminAuth.isLoggedIn()) {
     return <Navigate to={ADMIN_PANEL_PATH} replace />;
   }
 
@@ -45,23 +23,20 @@ export default function CoreAccess() {
     event.preventDefault();
     setLoading(true);
     setError("");
-    setMessage("");
 
-    const { error: loginError } = await supabase.auth.signInWithOtp({
-      email: form.email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}${window.location.pathname}`,
-      },
-    });
+    try {
+      const payload = await apiClient.adminLogin({
+        email: form.email.trim(),
+        password: form.password,
+      });
 
-    if (loginError) {
-      setError(loginError.message || "Access denied");
+      adminAuth.login(payload.token);
+      navigate(ADMIN_PANEL_PATH, { replace: true });
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Access denied");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setMessage("Login link sent. Please check your email and open the link to continue.");
-    setLoading(false);
   };
 
   return (
@@ -69,7 +44,7 @@ export default function CoreAccess() {
       <div className="mx-auto max-w-md rounded-2xl border bg-black p-8 shadow-sm">
         <h1 className="text-2xl text-center font-bold font-sans text-white">Admin Panel</h1>
         <p className="mt-2 text-md text-center text-slate-500">
-          Enter your admin email. We will send you a secure login link.
+          Login with your admin email and password.
         </p>
 
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
@@ -80,18 +55,27 @@ export default function CoreAccess() {
             required
             value={form.email}
             onChange={onChange}
-            placeholder="Email"
+            placeholder="Admin email"
+            className="w-full rounded-lg border border-white/20 bg-white px-3 py-2"
+          />
+          <input
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            required
+            value={form.password}
+            onChange={onChange}
+            placeholder="Admin password"
             className="w-full rounded-lg border border-white/20 bg-white px-3 py-2"
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
-          {message && <p className="text-sm text-green-500">{message}</p>}
 
           <button
             type="submit"
             className="w-full rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white"
             disabled={loading}
           >
-            {loading ? "Sending link..." : "Send login link"}
+            {loading ? "Signing in..." : "Login"}
           </button>
         </form>
       </div>

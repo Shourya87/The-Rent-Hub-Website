@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePropertiesContext } from "../../context/PropertiesContext";
 import { CORE_ENTRY_PATH } from "@/constants/adminAccess";
-import { supabase } from "@/services/supabaseClient";
+import { adminAuth } from "@/services/adminAuth";
 
 const CONTACT_NOTE = "Contact us for more details.";
 
@@ -28,16 +28,9 @@ const emptyForm = {
 };
 
 const getBedsFromSize = (size) => {
-  if (!size) {
-    return 1;
-  }
-
+  if (!size) return 1;
   const normalized = size.trim().toLowerCase();
-
-  if (normalized === "1rk") {
-    return 1;
-  }
-
+  if (normalized === "1rk") return 1;
   const numeric = Number.parseInt(normalized, 10);
   return Number.isNaN(numeric) ? 1 : numeric;
 };
@@ -45,25 +38,25 @@ const getBedsFromSize = (size) => {
 const buildDescription = (form) => {
   if (form.propertyType === "PG") {
     return [
-      "Rent: " + form.pgRent,
-      "Sharing: " + form.sharing,
-      "Posted On: " + (form.postedOn || "N/A"),
-      "Property Id: " + (form.propertyId || "N/A"),
+      `Rent: ${form.pgRent}`,
+      `Sharing: ${form.sharing}`,
+      `Posted On: ${form.postedOn || "N/A"}`,
+      `Property Id: ${form.propertyId || "N/A"}`,
       CONTACT_NOTE,
     ].join("\n");
   }
 
   return [
-    "Rent: " + form.flatRent,
-    "Location: " + form.location,
-    "Floor: " + form.floor,
-    "Size: " + form.size,
-    "Flat Type: " + form.flatType,
-    "Furnished: " + form.furnished,
-    "Availablity: " + form.availability,
-    "For Student/Family/Girls/Boys/Working: " + form.occupancyFor,
-    "Posted On: " + (form.postedOn || "N/A"),
-    "Property Id: " + (form.propertyId || "N/A"),
+    `Rent: ${form.flatRent}`,
+    `Location: ${form.location}`,
+    `Floor: ${form.floor}`,
+    `Size: ${form.size}`,
+    `Flat Type: ${form.flatType}`,
+    `Furnished: ${form.furnished}`,
+    `Availablity: ${form.availability}`,
+    `For Student/Family/Girls/Boys/Working: ${form.occupancyFor}`,
+    `Posted On: ${form.postedOn || "N/A"}`,
+    `Property Id: ${form.propertyId || "N/A"}`,
     CONTACT_NOTE,
   ].join("\n");
 };
@@ -72,84 +65,22 @@ export default function AdminPanel() {
   const { properties, addProperty, updateProperty, deleteProperty } = usePropertiesContext();
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
-  const [uploading, setUploading] = useState({ image: false, video: false });
-  const [uploadError, setUploadError] = useState("");
   const navigate = useNavigate();
-  const storageConfigError = supabase.storage.getConfigError();
 
-  const sortedProperties = useMemo(
-    () => [...properties].sort((a, b) => b.id - a.id),
-    [properties],
-  );
+  const sortedProperties = useMemo(() => [...properties].sort((a, b) => b.id - a.id), [properties]);
 
   const onChange = (event) => {
     const { name, value, type, checked } = event.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleFileUpload = async (event) => {
-    const { name, files } = event.target;
-    const file = files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    setUploadError("");
-
-    if (storageConfigError) {
-      try {
-        const mediaPreviewDataUrl = await fileToDataUrl(file);
-        setForm((prev) => ({
-          ...prev,
-          [name]: mediaPreviewDataUrl,
-        }));
-      } catch {
-        setUploadError("Unable to read local media file.");
-        return;
-      }
-
-      setUploadError(
-        "Supabase storage env missing on deployment. Temporary preview added only. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.",
-      );
-      return;
-    }
-
-    setUploading((prev) => ({ ...prev, [name]: true }));
-
-    const mediaType = name === "video" ? "video" : "image";
-    const { data, error } = await supabase.storage.uploadPropertyMedia(file, mediaType);
-
-    setUploading((prev) => ({ ...prev, [name]: false }));
-
-    if (error) {
-      setUploadError(error.message || `Unable to upload ${mediaType}.`);
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: data?.publicUrl || "",
-    }));
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
   const resetForm = () => {
     setEditingId(null);
-    setUploadError("");
     setForm(emptyForm);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (uploading.image || uploading.video) {
-      setUploadError("Please wait for media upload to finish.");
-      return;
-    }
-
     const isPG = form.propertyType === "PG";
 
     const payload = {
@@ -157,14 +88,11 @@ export default function AdminPanel() {
       location: form.location,
       price: Number(isPG ? form.pgRent : form.flatRent),
       beds: isPG ? 1 : getBedsFromSize(form.size),
-      baths: isPG ? 1 : 1,
-      area: isPG ? 0 : 0,
+      baths: 1,
+      area: 0,
       image: form.image,
       video: form.video,
-      highlights: form.highlights
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
+      highlights: form.highlights.split(",").map((item) => item.trim()).filter(Boolean),
       description: buildDescription(form),
       featured: form.featured,
       bhk: isPG ? "PG" : form.size,
@@ -196,22 +124,21 @@ export default function AdminPanel() {
     };
 
     if (editingId) {
-      updateProperty(editingId, payload);
+      await updateProperty(editingId, payload);
     } else {
-      addProperty(payload);
+      await addProperty(payload);
     }
 
     resetForm();
   };
 
-  const handleLockPanel = async () => {
-    await supabase.auth.signOut();
+  const handleLockPanel = () => {
+    adminAuth.logout();
     navigate(CORE_ENTRY_PATH, { replace: true });
   };
 
   const handleEdit = (property) => {
     const propertyType = property.propertyType || property.category || "Flat";
-
     setEditingId(property.id);
     setForm({
       ...emptyForm,
@@ -243,30 +170,15 @@ export default function AdminPanel() {
         <header className="rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
-            <button
-              onClick={handleLockPanel}
-              className="rounded-lg border border-white/20 bg-black px-3 py-2 text-sm font-medium"
-            >
+            <button onClick={handleLockPanel} className="rounded-lg border border-white/20 bg-black px-3 py-2 text-sm font-medium">
               Lock Panel
             </button>
           </div>
-          <p className="mt-2 text-slate-300">
-            Add, edit, and remove properties. All changes instantly update website listings.
-          </p>
+          <p className="mt-2 text-slate-300">Add, edit, and remove properties. All changes instantly update website listings.</p>
         </header>
 
         <section className="rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-semibold text-white">
-            {editingId ? "Edit Property" : "Add New Property"}
-          </h2>
-
-          {uploadError ? <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{uploadError}</p> : null}
-          {storageConfigError ? (
-            <p className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-              Deployment env missing: <span className="font-medium">VITE_SUPABASE_URL</span> and <span className="font-medium">VITE_SUPABASE_ANON_KEY</span>.
-              File upload will stay temporary until you add these in Vercel Project Settings → Environment Variables and redeploy.
-            </p>
-          ) : null}
+          <h2 className="mb-4 text-xl font-semibold text-white">{editingId ? "Edit Property" : "Add New Property"}</h2>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input name="title" value={form.title} onChange={onChange} required placeholder="Property title" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
@@ -276,18 +188,8 @@ export default function AdminPanel() {
             </select>
 
             <input name="location" value={form.location} onChange={onChange} required placeholder="Location" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
-            <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
-              <label className="mb-1 block text-xs text-slate-400">Property Image (Supabase-ready upload field)</label>
-              <input type="file" name="image" accept="image/*" onChange={handleFileUpload} className="w-full text-sm" />
-              {uploading.image && <p className="mt-1 text-xs text-yellow-300">Uploading image...</p>}
-              {!uploading.image && form.image && <p className="mt-1 text-xs text-green-400">Image uploaded</p>}
-            </div>
-            <div className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2">
-              <label className="mb-1 block text-xs text-slate-400">Property Video (Supabase-ready upload field)</label>
-              <input type="file" name="video" accept="video/*" onChange={handleFileUpload} className="w-full text-sm" />
-              {uploading.video && <p className="mt-1 text-xs text-yellow-300">Uploading video...</p>}
-              {!uploading.video && form.video && <p className="mt-1 text-xs text-green-400">Video uploaded</p>}
-            </div>
+            <input name="image" value={form.image} onChange={onChange} placeholder="Image URL" className="rounded-lg border border-white/20 bg-black px-3 py-2" required />
+            <input name="video" value={form.video} onChange={onChange} placeholder="Video URL (optional)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
             <input name="highlights" value={form.highlights} onChange={onChange} placeholder="Highlights (comma separated)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
 
             {form.propertyType === "Flat" ? (
@@ -315,9 +217,7 @@ export default function AdminPanel() {
               </>
             )}
 
-            <div className="rounded-lg border border-white/20 bg-black/50 px-3 py-2 text-sm text-slate-300 md:col-span-2">
-              Contact us for more details.
-            </div>
+            <div className="rounded-lg border border-white/20 bg-black/50 px-3 py-2 text-sm text-slate-300 md:col-span-2">Contact us for more details.</div>
 
             <label className="flex items-center gap-2 text-sm text-slate-300 md:col-span-2">
               <input type="checkbox" name="featured" checked={form.featured} onChange={onChange} />
@@ -325,7 +225,7 @@ export default function AdminPanel() {
             </label>
 
             <div className="flex gap-3 md:col-span-2">
-              <button type="submit" disabled={uploading.image || uploading.video} className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+              <button type="submit" className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white">
                 {editingId ? "Update Property" : "Add Property"}
               </button>
               {editingId && (
