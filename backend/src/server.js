@@ -10,9 +10,9 @@ import { createAuthToken, requireAdminAuth } from "./middleware/auth.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com").trim().toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com")
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173"
 
 app.use((request, response, next) => {
   response.header("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
