@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import initialProperties from "@/data/Properties";
+<<<<<<< HEAD
 import { supabase } from "@/lib/supabase";
+=======
+
+const STORAGE_KEY = "renthub_properties_v1";
+const DATA_URL_PREFIX = "data:";
+>>>>>>> 256ff541fdbd78f49d27a11d1971a3d94251e65e
 
 const PropertiesContext = createContext(null);
 
@@ -29,15 +35,34 @@ const normalizeProperty = (property, fallbackId) => {
   };
 };
 
+const toStorageSafeProperty = (property) => ({
+  ...property,
+  image: property.image?.startsWith(DATA_URL_PREFIX) ? "" : property.image,
+  video: property.video?.startsWith(DATA_URL_PREFIX) ? "" : property.video,
+});
+
 export function PropertiesProvider({ children }) {
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
+<<<<<<< HEAD
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from("properties")
         .select("*")
         .order("id", { ascending: false });
+=======
+    try {
+      const storageSafeProperties = properties.map(toStorageSafeProperty);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProperties));
+    } catch (error) {
+      console.warn(
+        "Unable to persist properties to localStorage. Save media as Supabase/public URLs before refresh.",
+        error,
+      );
+    }
+  }, [properties]);
+>>>>>>> 256ff541fdbd78f49d27a11d1971a3d94251e65e
 
       if (error) {
         console.error(error.message);
