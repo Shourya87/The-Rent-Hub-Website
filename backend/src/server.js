@@ -7,6 +7,7 @@ import {
   getPropertyById,
   listProperties,
   updatePropertyById,
+  getStorageMode,
 } from "./utils/propertyStore.js";
 import { createAuthToken, requireAdminAuth } from "./middleware/auth.js";
 import { saveBase64Media, uploadsRoot } from "./utils/mediaStore.js";
@@ -49,7 +50,7 @@ app.use("/uploads", express.static(uploadsRoot));
 app.use("/", express.static(path.resolve(__dirname, "../public")));
 
 app.get("/api/health", (_request, response) => {
-  response.json({ ok: true });
+  response.json({ ok: true, storage: getStorageMode() });
 });
 
 app.post("/api/admin/login", (request, response) => {

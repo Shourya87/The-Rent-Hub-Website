@@ -69,3 +69,45 @@ export const deletePropertyById = async (id) => {
   await propertiesDb.write(next);
   return true;
 };
+
+export const listProperties = async () => {
+  if (usePostgres()) {
+    return postgresStore.list();
+  }
+
+  return listJson();
+};
+
+export const getPropertyById = async (id) => {
+  if (usePostgres()) {
+    return postgresStore.getById(id);
+  }
+
+  return getJsonById(id);
+};
+
+export const createProperty = async (payload) => {
+  if (usePostgres()) {
+    return postgresStore.create(payload);
+  }
+
+  return createJson(payload);
+};
+
+export const updatePropertyById = async (id, payload) => {
+  if (usePostgres()) {
+    return postgresStore.updateById(id, payload);
+  }
+
+  return updateJsonById(id, payload);
+};
+
+export const deletePropertyById = async (id) => {
+  if (usePostgres()) {
+    return postgresStore.deleteById(id);
+  }
+
+  return deleteJsonById(id);
+};
+
+export const getStorageMode = () => (usePostgres() ? "postgres" : "json");
