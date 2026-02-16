@@ -1,0 +1,116 @@
+import { createJsonCollection } from "./db.js";
+import { postgresStore } from "./postgresStore.js";
+
+const propertiesDb = createJsonCollection("properties.json", []);
+
+const usePostgres = () => postgresStore.isConfigured();
+
+const listJson = async () => {
+  const properties = await propertiesDb.read();
+  return Array.isArray(properties)
+    ? properties.sort((a, b) => Number(b.id) - Number(a.id))
+    : [];
+};
+
+const getJsonById = async (id) => {
+  const properties = await propertiesDb.read();
+  if (!Array.isArray(properties)) {
+    return null;
+  }
+
+  return properties.find((property) => Number(property.id) === Number(id)) || null;
+};
+
+const createJson = async (payload) => {
+  const properties = await propertiesDb.read();
+  const safeProperties = Array.isArray(properties) ? properties : [];
+  const maxId = safeProperties.reduce((max, property) => Math.max(max, Number(property.id) || 0), 0);
+  const now = new Date().toISOString();
+
+  const created = {
+    ...payload,
+    id: maxId + 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  safeProperties.push(created);
+  await propertiesDb.write(safeProperties);
+  return created;
+};
+
+const updateJsonById = async (id, payload) => {
+  const properties = await propertiesDb.read();
+  const safeProperties = Array.isArray(properties) ? properties : [];
+  const index = safeProperties.findIndex((property) => Number(property.id) === Number(id));
+
+  if (index < 0) {
+    return null;
+  }
+
+  const updated = {
+    ...safeProperties[index],
+    ...payload,
+    id: safeProperties[index].id,
+    updatedAt: new Date().toISOString(),
+  };
+
+  safeProperties[index] = updated;
+  await propertiesDb.write(safeProperties);
+  return updated;
+};
+
+const deleteJsonById = async (id) => {
+  const properties = await propertiesDb.read();
+  const safeProperties = Array.isArray(properties) ? properties : [];
+  const next = safeProperties.filter((property) => Number(property.id) !== Number(id));
+
+  if (next.length === safeProperties.length) {
+    return false;
+  }
+
+  await propertiesDb.write(next);
+  return true;
+};
+
+export const listProperties = async () => {
+  if (usePostgres()) {
+    return postgresStore.list();
+  }
+
+  return listJson();
+};
+
+export const getPropertyById = async (id) => {
+  if (usePostgres()) {
+    return postgresStore.getById(id);
+  }
+
+  return getJsonById(id);
+};
+
+export const createProperty = async (payload) => {
+  if (usePostgres()) {
+    return postgresStore.create(payload);
+  }
+
+  return createJson(payload);
+};
+
+export const updatePropertyById = async (id, payload) => {
+  if (usePostgres()) {
+    return postgresStore.updateById(id, payload);
+  }
+
+  return updateJsonById(id, payload);
+};
+
+export const deletePropertyById = async (id) => {
+  if (usePostgres()) {
+    return postgresStore.deleteById(id);
+  }
+
+  return deleteJsonById(id);
+};
+
+export const getStorageMode = () => (usePostgres() ? "postgres" : "json");
