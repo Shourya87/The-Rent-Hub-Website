@@ -26,6 +26,69 @@ const normalizeSupabaseUrl = (value) => {
 
 const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
 
+
+const defaultStorageBucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET?.trim() || "property-media";
+
+const sanitizeFileName = (name = "") =>
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "file";
+
+const uploadFileToStorage = async ({ bucket = defaultStorageBucket, path, file, upsert = true }) => {
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    return { data: null, error: { message: configError } };
+  }
+
+  let response;
+
+  try {
+    const session = readSession();
+    const token = session?.access_token || supabaseAnonKey;
+    response = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        "x-upsert": String(upsert),
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+  } catch {
+    return {
+      data: null,
+      error: { message: "Unable to upload media to Supabase Storage." },
+    };
+  }
+
+  const payload = await parseResponseBody(response);
+
+  if (!response.ok) {
+    return {
+      data: null,
+      error: {
+        message: payload?.error || payload?.message || "Upload failed",
+      },
+    };
+  }
+
+  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
+
+  return {
+    data: {
+      ...payload,
+      path,
+      bucket,
+      publicUrl,
+    },
+    error: null,
+  };
+};
+
 const getSupabaseConfigError = () => {
   if (!rawSupabaseUrl?.trim()) {
     return "Missing VITE_SUPABASE_URL environment variable.";
@@ -268,6 +331,18 @@ export const supabase = {
     signInWithOtp,
     signOut,
     onAuthStateChange,
+  },
+  storage: {
+    async uploadPropertyMedia(file, mediaType = "image") {
+      const extension = file.name.includes(".")
+        ? file.name.split(".").pop()?.toLowerCase()
+        : "bin";
+      const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ""));
+      const timestamp = Date.now();
+      const path = `${mediaType}/${timestamp}-${safeName}.${extension || "bin"}`;
+
+      return uploadFileToStorage({ file, path });
+    },
   },
   rest: {
     async get(path) {

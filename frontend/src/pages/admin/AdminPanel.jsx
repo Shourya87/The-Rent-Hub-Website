@@ -42,14 +42,6 @@ const getBedsFromSize = (size) => {
   return Number.isNaN(numeric) ? 1 : numeric;
 };
 
-const fileToDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Unable to read file"));
-    reader.readAsDataURL(file);
-  });
-
 const buildDescription = (form) => {
   if (form.propertyType === "PG") {
     return [
@@ -80,6 +72,8 @@ export default function AdminPanel() {
   const { properties, addProperty, updateProperty, deleteProperty } = usePropertiesContext();
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [uploading, setUploading] = useState({ image: false, video: false });
+  const [uploadError, setUploadError] = useState("");
   const navigate = useNavigate();
 
   const sortedProperties = useMemo(
@@ -103,20 +97,38 @@ export default function AdminPanel() {
       return;
     }
 
-    const mediaUrl = await fileToDataUrl(file);
+    setUploadError("");
+    setUploading((prev) => ({ ...prev, [name]: true }));
+
+    const mediaType = name === "video" ? "video" : "image";
+    const { data, error } = await supabase.storage.uploadPropertyMedia(file, mediaType);
+
+    setUploading((prev) => ({ ...prev, [name]: false }));
+
+    if (error) {
+      setUploadError(error.message || `Unable to upload ${mediaType}.`);
+      return;
+    }
+
     setForm((prev) => ({
       ...prev,
-      [name]: mediaUrl,
+      [name]: data?.publicUrl || "",
     }));
   };
 
   const resetForm = () => {
     setEditingId(null);
+    setUploadError("");
     setForm(emptyForm);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (uploading.image || uploading.video) {
+      setUploadError("Please wait for media upload to finish.");
+      return;
+    }
 
     const isPG = form.propertyType === "PG";
 
@@ -228,6 +240,8 @@ export default function AdminPanel() {
             {editingId ? "Edit Property" : "Add New Property"}
           </h2>
 
+          {uploadError ? <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{uploadError}</p> : null}
+
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input name="title" value={form.title} onChange={onChange} required placeholder="Property title" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
             <select name="propertyType" value={form.propertyType} onChange={onChange} className="rounded-lg border border-white/20 bg-black px-3 py-2" required>
@@ -239,12 +253,14 @@ export default function AdminPanel() {
             <div className="rounded-lg border border-white/20 bg-black px-3 py-2">
               <label className="mb-1 block text-xs text-slate-400">Property Image (Supabase-ready upload field)</label>
               <input type="file" name="image" accept="image/*" onChange={handleFileUpload} className="w-full text-sm" />
-              {form.image && <p className="mt-1 text-xs text-green-400">Image selected</p>}
+              {uploading.image && <p className="mt-1 text-xs text-yellow-300">Uploading image...</p>}
+              {!uploading.image && form.image && <p className="mt-1 text-xs text-green-400">Image uploaded</p>}
             </div>
             <div className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2">
               <label className="mb-1 block text-xs text-slate-400">Property Video (Supabase-ready upload field)</label>
               <input type="file" name="video" accept="video/*" onChange={handleFileUpload} className="w-full text-sm" />
-              {form.video && <p className="mt-1 text-xs text-green-400">Video selected</p>}
+              {uploading.video && <p className="mt-1 text-xs text-yellow-300">Uploading video...</p>}
+              {!uploading.video && form.video && <p className="mt-1 text-xs text-green-400">Video uploaded</p>}
             </div>
             <input name="highlights" value={form.highlights} onChange={onChange} placeholder="Highlights (comma separated)" className="rounded-lg border border-white/20 bg-black px-3 py-2 md:col-span-2" />
 
@@ -283,7 +299,7 @@ export default function AdminPanel() {
             </label>
 
             <div className="flex gap-3 md:col-span-2">
-              <button type="submit" className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white">
+              <button type="submit" disabled={uploading.image || uploading.video} className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
                 {editingId ? "Update Property" : "Add Property"}
               </button>
               {editingId && (
