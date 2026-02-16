@@ -357,6 +357,9 @@ export const supabase = {
     onAuthStateChange,
   },
   storage: {
+    getConfigError() {
+      return getSupabaseConfigError();
+    },
     async uploadPropertyMedia(file, mediaType = "image") {
       const extension = file.name.includes(".")
         ? file.name.split(".").pop()?.toLowerCase()

@@ -75,6 +75,7 @@ export default function AdminPanel() {
   const [uploading, setUploading] = useState({ image: false, video: false });
   const [uploadError, setUploadError] = useState("");
   const navigate = useNavigate();
+  const storageConfigError = supabase.storage.getConfigError();
 
   const sortedProperties = useMemo(
     () => [...properties].sort((a, b) => b.id - a.id),
@@ -98,6 +99,25 @@ export default function AdminPanel() {
     }
 
     setUploadError("");
+
+    if (storageConfigError) {
+      try {
+        const mediaPreviewDataUrl = await fileToDataUrl(file);
+        setForm((prev) => ({
+          ...prev,
+          [name]: mediaPreviewDataUrl,
+        }));
+      } catch {
+        setUploadError("Unable to read local media file.");
+        return;
+      }
+
+      setUploadError(
+        "Supabase storage env missing on deployment. Temporary preview added only. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.",
+      );
+      return;
+    }
+
     setUploading((prev) => ({ ...prev, [name]: true }));
 
     const mediaType = name === "video" ? "video" : "image";
@@ -241,6 +261,12 @@ export default function AdminPanel() {
           </h2>
 
           {uploadError ? <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{uploadError}</p> : null}
+          {storageConfigError ? (
+            <p className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+              Deployment env missing: <span className="font-medium">VITE_SUPABASE_URL</span> and <span className="font-medium">VITE_SUPABASE_ANON_KEY</span>.
+              File upload will stay temporary until you add these in Vercel Project Settings → Environment Variables and redeploy.
+            </p>
+          ) : null}
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input name="title" value={form.title} onChange={onChange} required placeholder="Property title" className="rounded-lg border border-white/20 bg-black px-3 py-2" />
