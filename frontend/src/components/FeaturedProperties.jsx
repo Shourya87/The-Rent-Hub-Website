@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import PropertyCard from "@/components/property/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { usePropertiesContext } from "@/context/PropertiesContext";
+import { usePropertiesContext } from "../context/PropertiesContext";
 
 export default function FeaturedProperties() {
   const { properties } = usePropertiesContext();
@@ -22,7 +22,7 @@ export default function FeaturedProperties() {
           </div>
 
           <Link to="/listings">
-            <Button className="rounded-full bg-gradient-to-r from-orange-500 to-pink-500 px-8 py-6 text-base text-white hover:opacity-90">
+            <Button className="rounded-full bg-linear-to-r from-orange-500 to-pink-500 px-8 py-6 text-base text-white hover:opacity-90">
               Explore All
             </Button>
           </Link>

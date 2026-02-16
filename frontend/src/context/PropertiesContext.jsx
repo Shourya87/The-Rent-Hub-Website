@@ -1,14 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import initialProperties from "@/data/Properties";
-
-const STORAGE_KEY = "renthub_properties_v1";
-const DATA_URL_PREFIX = "data:";
+import { apiClient } from "@/services/apiClient";
 
 const PropertiesContext = createContext(null);
 
 const normalizeProperty = (property, fallbackId) => {
   const beds = Number(property.beds) || 1;
-  const propertyType = property.propertyType?.trim() || property.category?.trim() || "Flat";
+  const propertyType =
+    property.propertyType?.trim() || property.category?.trim() || "Flat";
 
   return {
     id: Number(property.id) || fallbackId,
@@ -26,76 +24,67 @@ const normalizeProperty = (property, fallbackId) => {
     bhk: property.bhk?.trim() || `${beds} BHK`,
     category: propertyType,
     propertyType,
+    beds,
+    baths: Number(property.baths) || 1,
+    area: Number(property.area) || 0,
+    highlights: Array.isArray(property.highlights) ? property.highlights : [],
     details: property.details || null,
   };
 };
 
-const toStorageSafeProperty = (property) => ({
-  ...property,
-  image: property.image?.startsWith(DATA_URL_PREFIX) ? "" : property.image,
-  video: property.video?.startsWith(DATA_URL_PREFIX) ? "" : property.video,
-});
-
 export function PropertiesProvider({ children }) {
-  const [properties, setProperties] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        return initialProperties.map((property, index) =>
-          normalizeProperty(property, index + 1),
-        );
-      }
-
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) {
-        return initialProperties.map((property, index) =>
-          normalizeProperty(property, index + 1),
-        );
-      }
-
-      return parsed.map((property, index) =>
-        normalizeProperty(property, property.id || index + 1),
-      );
-    } catch {
-      return initialProperties.map((property, index) =>
-        normalizeProperty(property, index + 1),
-      );
-    }
-  });
+  const [properties, setProperties] = useState([]);
 
   useEffect(() => {
-    try {
-      const storageSafeProperties = properties.map(toStorageSafeProperty);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProperties));
-    } catch (error) {
-      console.warn(
-        "Unable to persist properties to localStorage. Save media as Supabase/public URLs before refresh.",
-        error,
-      );
-    }
-  }, [properties]);
+    const fetchProperties = async () => {
+      try {
+        const data = await apiClient.getProperties();
+        setProperties(
+          data.map((property, index) =>
+            normalizeProperty(property, property.id || index + 1),
+          ),
+        );
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to load properties");
+      }
+    };
+
+    fetchProperties();
+  }, []);
 
   const value = useMemo(() => {
-    const addProperty = (payload) => {
-      setProperties((prev) => {
-        const maxId = prev.reduce((acc, item) => Math.max(acc, item.id), 0);
-        const nextProperty = normalizeProperty(payload, maxId + 1);
-        return [nextProperty, ...prev];
-      });
+    const addProperty = async (payload) => {
+      const normalized = normalizeProperty(payload);
+
+      try {
+        const created = await apiClient.createProperty(normalized);
+        setProperties((prev) => [normalizeProperty(created), ...prev]);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to add property");
+      }
     };
 
-    const updateProperty = (id, payload) => {
-      setProperties((prev) =>
-        prev.map((property) =>
-          property.id === id
-            ? normalizeProperty({ ...property, ...payload }, property.id)
-            : property,
-        ),
-      );
+    const updateProperty = async (id, payload) => {
+      try {
+        const updated = await apiClient.updateProperty(id, payload);
+
+        setProperties((prev) =>
+          prev.map((property) =>
+            property.id === id ? normalizeProperty(updated, id) : property,
+          ),
+        );
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to update property");
+      }
     };
 
-    const deleteProperty = (id) => {
-      setProperties((prev) => prev.filter((property) => property.id !== id));
+    const deleteProperty = async (id) => {
+      try {
+        await apiClient.deleteProperty(id);
+        setProperties((prev) => prev.filter((property) => property.id !== id));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to delete property");
+      }
     };
 
     return {
@@ -107,7 +96,9 @@ export function PropertiesProvider({ children }) {
   }, [properties]);
 
   return (
-    <PropertiesContext.Provider value={value}>{children}</PropertiesContext.Provider>
+    <PropertiesContext.Provider value={value}>
+      {children}
+    </PropertiesContext.Provider>
   );
 }
 
@@ -116,7 +107,9 @@ export function usePropertiesContext() {
   const context = useContext(PropertiesContext);
 
   if (!context) {
-    throw new Error("usePropertiesContext must be used inside PropertiesProvider");
+    throw new Error(
+      "usePropertiesContext must be used inside PropertiesProvider",
+    );
   }
 
   return context;

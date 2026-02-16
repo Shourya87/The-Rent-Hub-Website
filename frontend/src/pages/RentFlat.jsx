@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { usePropertiesContext } from "@/context/PropertiesContext";
+import { usePropertiesContext } from "../context/PropertiesContext";
 import PropertyCard from "@/components/property/PropertyCard";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -18,7 +18,9 @@ const locationsList = [
   "Techzone 4",
 ];
 
-const bhkOptions = ["1 BHK", "2 BHK", "3 BHK", "4+ BHK"];
+const bhkOptions = ["1 BHK", "2 BHK", "3 BHK", "4+ BHK", "PG"];
+
+const normalizeBhk = (value = "") => value.replace(/\s+/g, "").toLowerCase();
 
 export default function Rent() {
   const { properties } = usePropertiesContext();
@@ -36,9 +38,10 @@ export default function Rent() {
 
   const filteredProperties = useMemo(() => {
     let result = properties.filter((property) => {
+      const propertyBhk = normalizeBhk(property.bhk || `${property.beds} BHK`);
       const matchBHK =
         selectedBHK.length > 0
-          ? selectedBHK.includes(property.bhk)
+          ? selectedBHK.some((item) => normalizeBhk(item) === propertyBhk)
           : true;
 
       const matchLocation =
@@ -104,7 +107,7 @@ export default function Rent() {
 
           <button
             onClick={() => setOpenFilter(!openFilter)}
-            className="flex items-center gap-2 text-sm bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 rounded-md"
+            className="flex items-center gap-2 text-sm bg-linear-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 rounded-md"
           >
             <SlidersHorizontal size={16} />
             Filters
@@ -273,7 +276,7 @@ export default function Rent() {
             </button>
             <button
               onClick={() => setOpenFilter(false)}
-              className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 text-xs rounded-md"
+              className="bg-linear-to-r from-orange-500 to-pink-500 text-white px-3 py-1.5 text-xs rounded-md"
             >
               Apply
             </button>
