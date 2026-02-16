@@ -3,8 +3,7 @@ import { usePropertiesContext } from "@/context/PropertiesContext";
 import { MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const WHATSAPP_NUMBER_PLACEHOLDER = "YOUR_WHATSAPP_NUMBER";
-const WHATSAPP_MESSAGE_PLACEHOLDER = "Hi, I want details for this property.";
+const WHATSAPP_NUMBER = "919217566061"; // country code ke saath number (91 India)
 
 const renderInfoRows = (property) => {
   const type = property.propertyType || property.category || "Flat";
@@ -26,10 +25,7 @@ const renderInfoRows = (property) => {
     { label: "Flat Type", value: property.details?.flatType || "N/A" },
     { label: "Furnished", value: property.details?.furnished || "N/A" },
     { label: "Availablity", value: property.details?.availability || "N/A" },
-    {
-      label: "For",
-      value: property.details?.occupancyFor || "N/A",
-    },
+    { label: "For", value: property.details?.occupancyFor || "N/A" },
     { label: "Posted On", value: property.details?.postedOn || "N/A" },
     { label: "Property Id", value: property.details?.propertyId || property.id },
   ];
@@ -49,13 +45,28 @@ export default function PropertyDetails() {
   }
 
   const detailRows = renderInfoRows(property);
-  const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER_PLACEHOLDER}?text=${encodeURIComponent(
-    `${WHATSAPP_MESSAGE_PLACEHOLDER} (${property.title})`
+
+  // 👇 Proper formatted message
+  const message = `
+Hi The RentHub Company Team 
+
+I am interested in this property:
+
+Title: ${property.title}
+Property ID: ${property.details?.propertyId || property.id}
+
+Please share more details.
+`;
+
+  const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    message
   )}`;
 
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-2">
+        
+        {/* LEFT SIDE IMAGES */}
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
             <div className="overflow-hidden rounded-3xl border border-white/10">
@@ -88,9 +99,12 @@ export default function PropertyDetails() {
           </div>
         </div>
 
+        {/* RIGHT SIDE DETAILS */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold md:text-4xl">{property.title}</h1>
+            <h1 className="text-3xl font-bold md:text-4xl">
+              {property.title}
+            </h1>
 
             <p className="mt-2 flex items-center gap-2 text-slate-400">
               <MapPin size={16} />
@@ -99,16 +113,23 @@ export default function PropertyDetails() {
 
             <div className="mt-4 text-3xl font-extrabold text-orange-300">
               ₹{property.price}
-              <span className="text-base font-medium text-slate-400"> / month</span>
+              <span className="text-base font-medium text-slate-400">
+                {" "}
+                / month
+              </span>
             </div>
           </div>
 
+          {/* DETAILS */}
           <div>
             <h3 className="mb-3 text-xl font-semibold">Details</h3>
             <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-[15px] text-slate-200">
               {detailRows.map((row) => (
                 <p key={row.label}>
-                  <span className="font-semibold text-white">{row.label}:</span> {row.value}
+                  <span className="font-semibold text-white">
+                    {row.label}:
+                  </span>{" "}
+                  {row.value}
                 </p>
               ))}
 
@@ -116,8 +137,12 @@ export default function PropertyDetails() {
             </div>
           </div>
 
+          {/* BUTTON */}
           <div className="flex gap-4 pt-4">
-            <Button asChild className="flex-1 rounded-full bg-linear-to-r from-orange-500 to-pink-500 text-white hover:opacity-90">
+            <Button
+              asChild
+              className="flex-1 rounded-full bg-linear-to-r from-orange-500 to-pink-500 text-white hover:opacity-90"
+            >
               <a href={whatsappLink} target="_blank" rel="noreferrer">
                 <Phone size={16} className="mr-2" />
                 Contact Us
