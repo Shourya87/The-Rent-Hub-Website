@@ -8,6 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, "");
+  const devPort = Number(env.VITE_PORT) || 5174;
+  const proxyTarget = env.VITE_API_PROXY_TARGET || "http://localhost:3000";
 
   return {
     plugins: [react(), tailwindcss()],
@@ -17,9 +19,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      port: devPort,
       proxy: {
         "/api": {
-          target: "http://localhost:4000",
+          target: proxyTarget,
           changeOrigin: true,
         },
       },

@@ -25,9 +25,6 @@ const extensionByMime = {
 
 export const saveBase64Media = async ({ base64, mimeType, mediaType = "image", originalName = "media" }) => {
 
-  console.log(base64);
-
-
   if (!base64 || !mimeType) {
     throw new Error("Missing media payload.");
   }

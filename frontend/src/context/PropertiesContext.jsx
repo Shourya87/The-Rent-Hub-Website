@@ -61,6 +61,7 @@ export function PropertiesProvider({ children }) {
         setProperties((prev) => [normalizeProperty(created), ...prev]);
       } catch (error) {
         console.error(error instanceof Error ? error.message : "Unable to add property");
+        throw error;
       }
     };
 
@@ -75,6 +76,7 @@ export function PropertiesProvider({ children }) {
         );
       } catch (error) {
         console.error(error instanceof Error ? error.message : "Unable to update property");
+        throw error;
       }
     };
 
@@ -84,6 +86,7 @@ export function PropertiesProvider({ children }) {
         setProperties((prev) => prev.filter((property) => property.id !== id));
       } catch (error) {
         console.error(error instanceof Error ? error.message : "Unable to delete property");
+        throw error;
       }
     };
 
