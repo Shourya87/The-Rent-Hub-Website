@@ -42,14 +42,6 @@ const getBedsFromSize = (size) => {
   return Number.isNaN(numeric) ? 1 : numeric;
 };
 
-const fileToDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Unable to read file"));
-    reader.readAsDataURL(file);
-  });
-
 const buildDescription = (form) => {
   if (form.propertyType === "PG") {
     return [
