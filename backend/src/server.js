@@ -19,12 +19,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-const PORT = Number(process.env.PORT) || 4000;
+const PORT = Number(process.env.PORT) || 3000;
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@therenthub.com")
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173"
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5174"
 
-const isAllowedOrigin = (origin) => FRONTEND_ORIGIN.includes(origin)
+const allowedOrigins = FRONTEND_ORIGIN.split(",").map((value) => value.trim()).filter(Boolean);
+const isAllowedOrigin = (origin) => allowedOrigins.includes(origin)
 
 app.use((request, response, next) => {
   const origin = request.headers.origin || "";
@@ -88,6 +89,7 @@ app.post("/api/upload", upload.fields([
     const saved = await saveBase64Media({ base64: fileData, mimeType, mediaType, originalName });
 
     response.status(201).json({
+      success: true,
       data: {
         ...saved,
         url: `${request.protocol}://${request.get("host")}${saved.urlPath}`,
