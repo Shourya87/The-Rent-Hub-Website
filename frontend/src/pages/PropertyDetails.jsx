@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { usePropertiesContext } from "@/context/PropertiesContext";
-import { MapPin, Phone, Heart } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const WHATSAPP_NUMBER = "919217566061"; // country code ke saath number (91 India)
@@ -68,12 +68,34 @@ Please share more details.
         
         {/* LEFT SIDE IMAGES */}
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-3xl border border-white/10">
-            <img
-              src={property.image}
-              alt={property.title}
-              className="h-112.5 w-full object-cover"
-            />
+          <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+            <div className="overflow-hidden rounded-3xl border border-white/10">
+              {property.video ? (
+                <video
+                  src={property.video}
+                  controls
+                  className="h-full max-h-[32rem] min-h-[20rem] w-full rounded-3xl object-cover"
+                />
+              ) : (
+                <img
+                  src={property.image}
+                  alt={`${property.title} primary preview`}
+                  className="h-full max-h-[32rem] min-h-[20rem] w-full rounded-3xl object-cover"
+                />
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[property.image, property.image, property.image, property.image].map((imageSrc, idx) => (
+                <div key={`${property.id}-thumb-${idx}`} className="overflow-hidden rounded-2xl border border-white/10">
+                  <img
+                    src={imageSrc}
+                    alt={`${property.title} image ${idx + 1}`}
+                    className="h-full min-h-[9.5rem] w-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -111,9 +133,7 @@ Please share more details.
                 </p>
               ))}
 
-              <p className="mt-6 text-[16px] text-slate-400">
-                Contact us for more details.
-              </p>
+              <p className="mt-6 text-[16px] text-slate-400">Contact us for more details.</p>
             </div>
           </div>
 
