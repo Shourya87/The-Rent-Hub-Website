@@ -37,31 +37,51 @@ const sanitizeFileName = (name = "") =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "") || "file";
 
+const encodeStoragePath = (path) =>
+  path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
 const uploadFileToStorage = async ({ bucket = defaultStorageBucket, path, file, upsert = true }) => {
   const configError = getSupabaseConfigError();
   if (configError) {
     return { data: null, error: { message: configError } };
   }
 
+  const currentSession = readSession();
+  const encodedPath = encodeStoragePath(path);
+  const uploadUrl = `${supabaseUrl}/storage/v1/object/${bucket}/${encodedPath}`;
+
+  const baseHeaders = {
+    apikey: supabaseAnonKey,
+    "Content-Type": file.type || "application/octet-stream",
+  };
+
+  const authHeaders = currentSession?.access_token
+    ? { Authorization: `Bearer ${currentSession.access_token}` }
+    : {};
+
   let response;
 
   try {
-    const session = readSession();
-    const token = session?.access_token || supabaseAnonKey;
-    response = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+    response = await fetch(`${uploadUrl}?upsert=${upsert ? "true" : "false"}`, {
       method: "POST",
       headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${token}`,
-        "x-upsert": String(upsert),
-        "Content-Type": file.type || "application/octet-stream",
+        ...baseHeaders,
+        ...authHeaders,
       },
       body: file,
     });
-  } catch {
+  } catch (error) {
     return {
       data: null,
-      error: { message: "Unable to upload media to Supabase Storage." },
+      error: {
+        message:
+          error instanceof Error
+            ? `Unable to upload media to Supabase Storage: ${error.message}`
+            : "Unable to upload media to Supabase Storage.",
+      },
     };
   }
 
@@ -71,12 +91,16 @@ const uploadFileToStorage = async ({ bucket = defaultStorageBucket, path, file, 
     return {
       data: null,
       error: {
-        message: payload?.error || payload?.message || "Upload failed",
+        message:
+          payload?.error ||
+          payload?.message ||
+          payload?.msg ||
+          `Upload failed (${response.status})`,
       },
     };
   }
 
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
+  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${encodedPath}`;
 
   return {
     data: {
