@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { usePropertiesContext } from "@/context/PropertiesContext";
-import { MapPin, Phone, Heart } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const WHATSAPP_NUMBER_PLACEHOLDER = "YOUR_WHATSAPP_NUMBER";
@@ -57,21 +57,35 @@ export default function PropertyDetails() {
     <div className="min-h-screen bg-black text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-2">
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-3xl border border-white/10">
-            <img src={property.image} alt={property.title} className="h-112.5 w-full object-cover" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <img src={property.image} className="h-32 rounded-xl object-cover" />
-            <img src={property.image} className="h-32 rounded-xl object-cover" />
-            <img src={property.image} className="h-32 rounded-xl object-cover" />
-          </div>
-
-          {property.video && (
+          <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
             <div className="overflow-hidden rounded-3xl border border-white/10">
-              <video src={property.video} controls className="w-full" />
+              {property.video ? (
+                <video
+                  src={property.video}
+                  controls
+                  className="h-full max-h-[32rem] min-h-[20rem] w-full rounded-3xl object-cover"
+                />
+              ) : (
+                <img
+                  src={property.image}
+                  alt={`${property.title} primary preview`}
+                  className="h-full max-h-[32rem] min-h-[20rem] w-full rounded-3xl object-cover"
+                />
+              )}
             </div>
-          )}
+
+            <div className="grid grid-cols-2 gap-3">
+              {[property.image, property.image, property.image, property.image].map((imageSrc, idx) => (
+                <div key={`${property.id}-thumb-${idx}`} className="overflow-hidden rounded-2xl border border-white/10">
+                  <img
+                    src={imageSrc}
+                    alt={`${property.title} image ${idx + 1}`}
+                    className="h-full min-h-[9.5rem] w-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -98,10 +112,7 @@ export default function PropertyDetails() {
                 </p>
               ))}
 
-              <p className="mt-6 text-[16px] text-slate-400">
-                Contact us for more details.
-              </p>
-
+              <p className="mt-6 text-[16px] text-slate-400">Contact us for more details.</p>
             </div>
           </div>
 

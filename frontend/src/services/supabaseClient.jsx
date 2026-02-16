@@ -1,7 +1,5 @@
-import { env } from "vite";
-
-const rawSupabaseUrl = env.VITE_SUPABASE_URL;
-const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
+const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const STORAGE_KEY = "renthub_supabase_session";
 const listeners = new Set();
@@ -100,6 +98,44 @@ const buildHeaders = (withAuth = false) => {
 
 const getSession = async () => ({ data: { session: readSession() }, error: null });
 
+const setSessionFromUrl = () => {
+  const hash = window.location.hash.startsWith("#")
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+
+  if (!hash) {
+    return { data: { session: readSession() }, error: null };
+  }
+
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
+  const tokenType = params.get("token_type");
+  const expiresIn = Number(params.get("expires_in") || 3600);
+
+  if (!accessToken) {
+    return { data: { session: readSession() }, error: null };
+  }
+
+  const expiresAt = Math.floor(Date.now() / 1000) + (Number.isFinite(expiresIn) ? expiresIn : 3600);
+  const session = {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    token_type: tokenType || "bearer",
+    expires_in: expiresIn,
+    expires_at: expiresAt,
+    user: readSession()?.user || null,
+  };
+
+  writeSession(session);
+  notifyAuthChange("SIGNED_IN", session);
+
+  const cleanedUrl = `${window.location.pathname}${window.location.search}`;
+  window.history.replaceState({}, document.title, cleanedUrl);
+
+  return { data: { session }, error: null };
+};
+
 const signInWithPassword = async ({ email, password }) => {
   const configError = getSupabaseConfigError();
   if (configError) {
@@ -144,6 +180,51 @@ const signInWithPassword = async ({ email, password }) => {
   return { data: { session: payload, user: payload.user }, error: null };
 };
 
+const signInWithOtp = async ({ email, options = {} }) => {
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    return { data: null, error: { message: configError } };
+  }
+
+  let response;
+
+  try {
+    response = await fetch(`${supabaseUrl}/auth/v1/otp`, {
+      method: "POST",
+      headers: buildHeaders(),
+      body: JSON.stringify({
+        email,
+        create_user: false,
+        email_redirect_to: options.emailRedirectTo,
+      }),
+    });
+  } catch {
+    return {
+      data: null,
+      error: {
+        message: "Unable to reach Supabase auth server. Check VITE_SUPABASE_URL.",
+      },
+    };
+  }
+
+  const payload = await parseResponseBody(response);
+
+  if (!response.ok) {
+    return {
+      data: null,
+      error: {
+        message:
+          payload?.msg ||
+          payload?.error_description ||
+          payload?.message ||
+          "Unable to send login link",
+      },
+    };
+  }
+
+  return { data: payload || {}, error: null };
+};
+
 const signOut = async () => {
   const currentSession = readSession();
 
@@ -182,7 +263,9 @@ const onAuthStateChange = (callback) => {
 export const supabase = {
   auth: {
     getSession,
+    setSessionFromUrl,
     signInWithPassword,
+    signInWithOtp,
     signOut,
     onAuthStateChange,
   },
