@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import initialProperties from "@/data/Properties";
 
 const STORAGE_KEY = "renthub_properties_v1";
+const DATA_URL_PREFIX = "data:";
 
 const PropertiesContext = createContext(null);
 
@@ -28,6 +29,12 @@ const normalizeProperty = (property, fallbackId) => {
     details: property.details || null,
   };
 };
+
+const toStorageSafeProperty = (property) => ({
+  ...property,
+  image: property.image?.startsWith(DATA_URL_PREFIX) ? "" : property.image,
+  video: property.video?.startsWith(DATA_URL_PREFIX) ? "" : property.video,
+});
 
 export function PropertiesProvider({ children }) {
   const [properties, setProperties] = useState(() => {
@@ -57,7 +64,15 @@ export function PropertiesProvider({ children }) {
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+    try {
+      const storageSafeProperties = properties.map(toStorageSafeProperty);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSafeProperties));
+    } catch (error) {
+      console.warn(
+        "Unable to persist properties to localStorage. Save media as Supabase/public URLs before refresh.",
+        error,
+      );
+    }
   }, [properties]);
 
   const value = useMemo(() => {
