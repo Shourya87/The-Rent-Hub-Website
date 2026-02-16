@@ -26,6 +26,93 @@ const normalizeSupabaseUrl = (value) => {
 
 const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
 
+
+const defaultStorageBucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET?.trim() || "property-media";
+
+const sanitizeFileName = (name = "") =>
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "file";
+
+const encodeStoragePath = (path) =>
+  path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+const uploadFileToStorage = async ({ bucket = defaultStorageBucket, path, file, upsert = true }) => {
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    return { data: null, error: { message: configError } };
+  }
+
+  const currentSession = readSession();
+  const encodedPath = encodeStoragePath(path);
+  const uploadUrl = `${supabaseUrl}/storage/v1/object/${bucket}/${encodedPath}`;
+
+  const baseHeaders = {
+    apikey: supabaseAnonKey,
+    "Content-Type": file.type || "application/octet-stream",
+  };
+
+  const authHeaders = currentSession?.access_token
+    ? { Authorization: `Bearer ${currentSession.access_token}` }
+    : {};
+
+  let response;
+
+  try {
+    response = await fetch(`${uploadUrl}?upsert=${upsert ? "true" : "false"}`, {
+      method: "POST",
+      headers: {
+        ...baseHeaders,
+        ...authHeaders,
+      },
+      body: file,
+    });
+  } catch (error) {
+    return {
+      data: null,
+      error: {
+        message:
+          error instanceof Error
+            ? `Unable to upload media to Supabase Storage: ${error.message}`
+            : "Unable to upload media to Supabase Storage.",
+      },
+    };
+  }
+
+  const payload = await parseResponseBody(response);
+
+  if (!response.ok) {
+    return {
+      data: null,
+      error: {
+        message:
+          payload?.error ||
+          payload?.message ||
+          payload?.msg ||
+          `Upload failed (${response.status})`,
+      },
+    };
+  }
+
+  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${encodedPath}`;
+
+  return {
+    data: {
+      ...payload,
+      path,
+      bucket,
+      publicUrl,
+    },
+    error: null,
+  };
+};
+
 const getSupabaseConfigError = () => {
   if (!rawSupabaseUrl?.trim()) {
     return "Missing VITE_SUPABASE_URL environment variable.";
@@ -268,6 +355,21 @@ export const supabase = {
     signInWithOtp,
     signOut,
     onAuthStateChange,
+  },
+  storage: {
+    getConfigError() {
+      return getSupabaseConfigError();
+    },
+    async uploadPropertyMedia(file, mediaType = "image") {
+      const extension = file.name.includes(".")
+        ? file.name.split(".").pop()?.toLowerCase()
+        : "bin";
+      const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ""));
+      const timestamp = Date.now();
+      const path = `${mediaType}/${timestamp}-${safeName}.${extension || "bin"}`;
+
+      return uploadFileToStorage({ file, path });
+    },
   },
   rest: {
     async get(path) {
