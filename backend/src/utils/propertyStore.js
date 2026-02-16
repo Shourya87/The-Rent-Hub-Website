@@ -1,18 +1,15 @@
 import { createJsonCollection } from "./db.js";
-import { postgresStore } from "./postgresStore.js";
 
 const propertiesDb = createJsonCollection("properties.json", []);
 
-const usePostgres = () => postgresStore.isConfigured();
-
-const listJson = async () => {
+export const listProperties = async () => {
   const properties = await propertiesDb.read();
   return Array.isArray(properties)
     ? properties.sort((a, b) => Number(b.id) - Number(a.id))
     : [];
 };
 
-const getJsonById = async (id) => {
+export const getPropertyById = async (id) => {
   const properties = await propertiesDb.read();
   if (!Array.isArray(properties)) {
     return null;
@@ -21,7 +18,7 @@ const getJsonById = async (id) => {
   return properties.find((property) => Number(property.id) === Number(id)) || null;
 };
 
-const createJson = async (payload) => {
+export const createProperty = async (payload) => {
   const properties = await propertiesDb.read();
   const safeProperties = Array.isArray(properties) ? properties : [];
   const maxId = safeProperties.reduce((max, property) => Math.max(max, Number(property.id) || 0), 0);
@@ -39,7 +36,7 @@ const createJson = async (payload) => {
   return created;
 };
 
-const updateJsonById = async (id, payload) => {
+export const updatePropertyById = async (id, payload) => {
   const properties = await propertiesDb.read();
   const safeProperties = Array.isArray(properties) ? properties : [];
   const index = safeProperties.findIndex((property) => Number(property.id) === Number(id));
@@ -60,7 +57,7 @@ const updateJsonById = async (id, payload) => {
   return updated;
 };
 
-const deleteJsonById = async (id) => {
+export const deletePropertyById = async (id) => {
   const properties = await propertiesDb.read();
   const safeProperties = Array.isArray(properties) ? properties : [];
   const next = safeProperties.filter((property) => Number(property.id) !== Number(id));

@@ -26,7 +26,7 @@ Built with a **minimal black & white aesthetic** to reflect trust, clarity, and 
 - 📄 Detailed Property Pages
 - 🧑‍💼 Admin Login + Property CRUD
 - 🔗 Frontend + Express backend API integration
-- 🗄️ Database support: **Postgres (recommended)** + JSON fallback
+- 🗄️ Lightweight JSON database for properties
 - 📁 Local folder media upload (image/video) from mobile + desktop
 - 📱 Fully Responsive (Mobile-First)
 - 💬 Direct WhatsApp Contact Button
@@ -164,6 +164,15 @@ If `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are not set, backend auto-uses:
 - `SUPABASE_PROPERTIES_TABLE` (optional)
 
 ---
+
+
+## 🗃️ Data & Upload Storage
+
+- Property records are stored in `backend/src/data/properties.json` (lightweight JSON DB).
+- Uploaded files are stored in local folders:
+  - `backend/src/uploads/images`
+  - `backend/src/uploads/videos`
+- Backend serves uploaded files via `/uploads/*` URLs.
 
 ## 🔐 Admin Panel Access
 
