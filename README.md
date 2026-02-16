@@ -24,6 +24,10 @@ Built with a **minimal black & white aesthetic** to reflect trust, clarity, and 
 - 🏠 Property Listings
 - 🔍 Search & Filtering
 - 📄 Detailed Property Pages
+- 🧑‍💼 Admin Login + Property CRUD
+- 🔗 Frontend + Express backend API integration
+- 🗄️ Lightweight JSON database for properties
+- 📁 Local folder media upload (image/video) from mobile + desktop
 - 📱 Fully Responsive (Mobile-First)
 - 💬 Direct WhatsApp Contact Button
 - 🎨 Premium Black & White UI
@@ -36,18 +40,83 @@ Built with a **minimal black & white aesthetic** to reflect trust, clarity, and 
 - 🎨 Tailwind CSS
 - 🧩 shadcn/ui
 - 🔁 React Router DOM
+- 🟢 Node.js + Express backend
 
 ---
 
 ## 📂 Project Structure
 
-src/
-│
-├── components/
-├── pages/
-├── data/
-├── App.jsx
-└── main.jsx
+```txt
+backend/
+  src/
+    data/properties.json
+    middleware/auth.js
+    utils/propertyStore.js
+    server.js
+frontend/
+  src/
+    pages/
+    components/
+    context/
+```
+
+---
+
+## ⚙️ Local Setup (Frontend + Backend Connected)
+
+### 1) Backend setup
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Backend runs on: `http://localhost:4000`
+
+Optional backend env vars:
+
+- `PORT` (default `4000`)
+- `FRONTEND_ORIGIN` (default `http://localhost:5173`)
+- `ADMIN_EMAIL` (default `admin@therenthub.com`)
+- `ADMIN_PASSWORD` (default `admin123`)
+- `ADMIN_TOKEN` (default `renthub-admin-token`)
+
+### 2) Frontend setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on: `http://localhost:5173`
+
+By default Vite proxy routes `/api/*` requests to `http://localhost:4000`.
+
+If needed, set:
+
+- `VITE_API_BASE_URL` (example `http://localhost:4000`)
+- `VITE_PROXY_TARGET` (example `http://localhost:4000`)
+
+---
+
+
+## 🗃️ Data & Upload Storage
+
+- Property records are stored in `backend/src/data/properties.json` (lightweight JSON DB).
+- Uploaded files are stored in local folders:
+  - `backend/src/uploads/images`
+  - `backend/src/uploads/videos`
+- Backend serves uploaded files via `/uploads/*` URLs.
+
+## 🔐 Admin Panel Access
+
+1. Open: `/core-team-entry`
+2. Login using backend credentials (`ADMIN_EMAIL`, `ADMIN_PASSWORD`)
+3. Access protected admin panel at: `/core-team/ops-console`
+
+From admin panel, you can add/edit/delete properties and changes instantly reflect in listings.
 
 ---
 
@@ -58,7 +127,7 @@ To build a clean, high-performance, and AI-ready real estate platform that simpl
 Future upgrades:
 - 🤖 AI Auto-Reply (Hindi & English)
 - 🏘️ Owner Dashboard
-- 🔐 Admin Panel
+- 🔐 Advanced role-based admin panel
 
 ---
 

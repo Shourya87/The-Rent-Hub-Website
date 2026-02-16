@@ -1,8 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import initialProperties from "@/data/Properties";
-
-const STORAGE_KEY = "renthub_properties_v1";
-const DATA_URL_PREFIX = "data:";
+import { apiClient } from "@/services/apiClient";
 
 const PropertiesContext = createContext(null);
 
@@ -27,36 +24,29 @@ const normalizeProperty = (property, fallbackId) => {
     bhk: property.bhk?.trim() || `${beds} BHK`,
     category: propertyType,
     propertyType,
+    beds,
+    baths: Number(property.baths) || 1,
+    area: Number(property.area) || 0,
+    highlights: Array.isArray(property.highlights) ? property.highlights : [],
     details: property.details || null,
   };
 };
-
-const toStorageSafeProperty = (property) => ({
-  ...property,
-  image: property.image?.startsWith(DATA_URL_PREFIX) ? "" : property.image,
-  video: property.video?.startsWith(DATA_URL_PREFIX) ? "" : property.video,
-});
 
 export function PropertiesProvider({ children }) {
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
     const fetchProperties = async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .order("id", { ascending: false });
-
-      if (error) {
-        console.error(error.message);
-        return;
+      try {
+        const data = await apiClient.getProperties();
+        setProperties(
+          data.map((property, index) =>
+            normalizeProperty(property, property.id || index + 1),
+          ),
+        );
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to load properties");
       }
-
-      setProperties(
-        data.map((property, index) =>
-          normalizeProperty(property, property.id || index + 1),
-        ),
-      );
     };
 
     fetchProperties();
@@ -66,47 +56,35 @@ export function PropertiesProvider({ children }) {
     const addProperty = async (payload) => {
       const normalized = normalizeProperty(payload);
 
-      const { data, error } = await supabase
-        .from("properties")
-        .insert([normalized])
-        .select()
-        .single();
-
-      if (error) {
-        console.error(error.message);
-        return;
+      try {
+        const created = await apiClient.createProperty(normalized);
+        setProperties((prev) => [normalizeProperty(created), ...prev]);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to add property");
       }
-
-      setProperties((prev) => [data, ...prev]);
     };
 
     const updateProperty = async (id, payload) => {
-      const { data, error } = await supabase
-        .from("properties")
-        .update(payload)
-        .eq("id", id)
-        .select()
-        .single();
+      try {
+        const updated = await apiClient.updateProperty(id, payload);
 
-      if (error) {
-        console.error(error.message);
-        return;
+        setProperties((prev) =>
+          prev.map((property) =>
+            property.id === id ? normalizeProperty(updated, id) : property,
+          ),
+        );
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to update property");
       }
-
-      setProperties((prev) =>
-        prev.map((property) => (property.id === id ? data : property)),
-      );
     };
 
     const deleteProperty = async (id) => {
-      const { error } = await supabase.from("properties").delete().eq("id", id);
-
-      if (error) {
-        console.error(error.message);
-        return;
+      try {
+        await apiClient.deleteProperty(id);
+        setProperties((prev) => prev.filter((property) => property.id !== id));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : "Unable to delete property");
       }
-
-      setProperties((prev) => prev.filter((property) => property.id !== id));
     };
 
     return {
