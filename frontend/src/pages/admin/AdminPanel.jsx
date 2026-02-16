@@ -66,8 +66,6 @@ export default function AdminPanel() {
   const { properties, addProperty, updateProperty, deleteProperty } = usePropertiesContext();
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
-  const [uploading, setUploading] = useState({ image: false, video: false });
-  const [uploadError, setUploadError] = useState("");
   const navigate = useNavigate();
 
   const sortedProperties = useMemo(() => [...properties].sort((a, b) => b.id - a.id), [properties]);
@@ -271,7 +269,7 @@ export default function AdminPanel() {
             </label>
 
             <div className="flex gap-3 md:col-span-2">
-              <button type="submit" disabled={uploading.image || uploading.video} className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+              <button type="submit" className="rounded-lg bg-linear-to-r from-orange-500 to-pink-500 px-4 py-2 font-medium text-white">
                 {editingId ? "Update Property" : "Add Property"}
               </button>
               {editingId && (
