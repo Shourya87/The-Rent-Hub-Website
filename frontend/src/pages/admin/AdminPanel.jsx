@@ -97,7 +97,7 @@ export default function AdminPanel() {
 
     try {
       const uploaded = await apiClient.uploadMedia(file, mediaType);
-      setForm((prev) => ({ ...prev, [name]: uploaded?.url || "" }));
+      setForm((prev) => ({ ...prev, [name]: uploaded?.fileKey || "" }));
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : `Unable to upload ${mediaType}.`);
     } finally {
