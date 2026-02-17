@@ -1,9 +1,6 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.resolve(__dirname, "../uploads");
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+export const SUPABASE_STORAGE_BUCKET = (process.env.SUPABASE_STORAGE_BUCKET || "property-media").trim();
 
 const sanitize = (value = "") =>
   value
@@ -12,6 +9,8 @@ const sanitize = (value = "") =>
     .replace(/[^a-z0-9._-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "") || "file";
+
+const getFolderByMimeType = (mimeType = "") => (mimeType.startsWith("video/") ? "videos" : "images");
 
 const extensionByMime = {
   "image/jpeg": "jpg",
@@ -23,36 +22,74 @@ const extensionByMime = {
   "video/quicktime": "mov",
 };
 
-export const saveBase64Media = async ({ base64, mimeType, mediaType = "image", originalName = "media" }) => {
+const ensureConfigured = () => {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+  }
+};
 
-  if (!base64 || !mimeType) {
-    throw new Error("Missing media payload.");
+export const getStorageMode = () => "supabase-storage";
+
+export const getSupabasePublicUrl = (fileKey = "") => {
+  if (!fileKey || !SUPABASE_URL || !SUPABASE_STORAGE_BUCKET) {
+    return "";
   }
 
+  const encodedPath = fileKey
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${encodedPath}`;
+};
+
+export const uploadMediaFile = async ({ file, mediaType = "image" }) => {
+  ensureConfigured();
+
+  if (!file?.buffer) {
+    throw new Error("No file buffer was received.");
+  }
+
+  const mimeType = file.mimetype || "application/octet-stream";
   const isImage = mimeType.startsWith("image/");
   const isVideo = mimeType.startsWith("video/");
 
   if ((mediaType === "image" && !isImage) || (mediaType === "video" && !isVideo)) {
-    throw new Error("Media type and mime type mismatch.");
+    throw new Error("Media type and uploaded file type do not match.");
   }
 
-  const buffer = Buffer.from(base64, "base64");
+  const folder = getFolderByMimeType(mimeType);
   const extension = extensionByMime[mimeType] || "bin";
-  const folder = mediaType === "video" ? "videos" : "images";
-  const timestamp = Date.now();
-  const fileName = `${timestamp}-${sanitize(originalName.replace(/\.[^.]+$/, ""))}.${extension}`;
-  const destinationDir = path.resolve(uploadsDir, folder);
-  const destinationPath = path.resolve(destinationDir, fileName);
+  const safeBaseName = sanitize((file.originalname || "media").replace(/\.[^.]+$/, ""));
+  const fileKey = `${folder}/${Date.now()}-${safeBaseName}.${extension}`;
 
-  await fs.mkdir(destinationDir, { recursive: true });
-  await fs.writeFile(destinationPath, buffer);
+  const encodedKey = fileKey
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${SUPABASE_STORAGE_BUCKET}/${encodedKey}`;
+
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": mimeType,
+      "x-upsert": "false",
+    },
+    body: file.buffer,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(errorBody || `Supabase upload failed with status ${response.status}.`);
+  }
 
   return {
-    fileName,
+    fileKey,
     mimeType,
-    size: buffer.length,
-    urlPath: `/uploads/${folder}/${fileName}`,
+    size: file.size || file.buffer.length,
+    url: getSupabasePublicUrl(fileKey),
   };
 };
-
-export const uploadsRoot = uploadsDir;

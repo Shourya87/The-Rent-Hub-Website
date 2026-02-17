@@ -98,9 +98,7 @@ export const apiClient = {
   },
   uploadMedia: async (file, mediaType = "image") => {
     const formData = new FormData();
-    formData.append("base64", file);
-    formData.append("mimeType", file.type || "");
-    formData.append("originalName", file.name || "media");
+    formData.append("file", file);
     formData.append("mediaType", mediaType);
 
     const payload = await request("/api/upload", {

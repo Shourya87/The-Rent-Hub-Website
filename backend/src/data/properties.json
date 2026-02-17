@@ -82,8 +82,8 @@
     "title": "Proper 1BHK",
     "location": "Alpha 1",
     "price": 8500,
-    "image": "http://localhost:3000/uploads/images/1771285184063-logotransparent-3.png",
-    "video": "http://localhost:3000/uploads/videos/1771284974090-reel.mp4",
+    "image": "images/1771285184063-logotransparent-3.png",
+    "video": "videos/1771284974090-reel.mp4",
     "description": "Rent: 8500\nLocation: Alpha 1\nFloor: 1\nSize: 1BHK\nFlat Type: With Owner\nFurnished: Raw\nAvailablity: From Tommorow\nFor Student/Family/Girls/Boys/Working: Single Girls Only\nPosted On: 16-2-2026\nProperty Id: KR\nContact us for more details.",
     "featured": true,
     "bhk": "1BHK",
@@ -107,7 +107,7 @@
       "contactNote": "Contact us for more details.",
       "postedOn": "16-2-2026",
       "propertyId": "KR",
-      "video": "http://localhost:3000/uploads/videos/1771284974090-reel.mp4"
+      "video": "videos/1771284974090-reel.mp4"
     },
     "id": 4,
     "createdAt": "2026-02-16T23:35:07.927Z",

@@ -2,6 +2,48 @@ import { createJsonCollection } from "./db.js";
 
 const propertiesDb = createJsonCollection("properties.json", []);
 
+const normalizeMediaKey = (value = "") => {
+  const trimmed = String(value || "").trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    const marker = "/storage/v1/object/public/";
+    const markerIndex = trimmed.indexOf(marker);
+
+    if (markerIndex >= 0) {
+      const pathWithBucket = trimmed.slice(markerIndex + marker.length);
+      const firstSlash = pathWithBucket.indexOf("/");
+      if (firstSlash >= 0) {
+        return decodeURIComponent(pathWithBucket.slice(firstSlash + 1));
+      }
+    }
+
+    return trimmed;
+  }
+
+  return trimmed.replace(/^\/+/, "");
+};
+
+const normalizePayload = (payload = {}) => {
+  const details = payload.details && typeof payload.details === "object"
+    ? { ...payload.details }
+    : payload.details;
+
+  if (details && typeof details === "object" && "video" in details) {
+    details.video = normalizeMediaKey(details.video);
+  }
+
+  return {
+    ...payload,
+    image: normalizeMediaKey(payload.image),
+    video: normalizeMediaKey(payload.video),
+    details,
+  };
+};
+
 export const listProperties = async () => {
   const properties = await propertiesDb.read();
   return Array.isArray(properties)
@@ -25,7 +67,7 @@ export const createProperty = async (payload) => {
   const now = new Date().toISOString();
 
   const created = {
-    ...payload,
+    ...normalizePayload(payload),
     id: maxId + 1,
     createdAt: now,
     updatedAt: now,
@@ -47,7 +89,7 @@ export const updatePropertyById = async (id, payload) => {
 
   const updated = {
     ...safeProperties[index],
-    ...payload,
+    ...normalizePayload(payload),
     id: safeProperties[index].id,
     updatedAt: new Date().toISOString(),
   };
@@ -70,4 +112,4 @@ export const deletePropertyById = async (id) => {
   return true;
 };
 
-export const getStorageMode = () => (usePostgres() ? "postgres" : "json");
+export const getStorageMode = () => "json";

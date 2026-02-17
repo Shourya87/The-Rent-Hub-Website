@@ -1,22 +1,44 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { apiClient } from "@/services/apiClient";
+import { getSupabasePublicUrl } from "@/lib/supabase";
 
 const PropertiesContext = createContext(null);
+
+const fallbackImage =
+  "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1200&auto=format&fit=crop";
+
+const resolveMediaUrl = (value = "") => {
+  const trimmed = String(value || "").trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return getSupabasePublicUrl(trimmed);
+};
 
 const normalizeProperty = (property, fallbackId) => {
   const beds = Number(property.beds) || 1;
   const propertyType =
     property.propertyType?.trim() || property.category?.trim() || "Flat";
 
+  const imageUrl = resolveMediaUrl(property.image);
+  const videoKey = property.video?.trim() || property.details?.video?.trim() || "";
+  const videoUrl = resolveMediaUrl(videoKey);
+
   return {
     id: Number(property.id) || fallbackId,
     title: property.title?.trim() || "Untitled Property",
     location: property.location?.trim() || "Unknown Location",
     price: Number(property.price) || 0,
-    image:
-      property.image?.trim() ||
-      "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1200&auto=format&fit=crop",
-    video: property.video?.trim() || property.details?.video?.trim() || "",
+    image: imageUrl || fallbackImage,
+    imageKey: property.image?.trim() || "",
+    video: videoUrl,
+    videoKey,
     description:
       property.description?.trim() ||
       "Property details will be shared by the admin.",
