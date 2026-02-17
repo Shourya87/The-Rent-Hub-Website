@@ -13,13 +13,19 @@ const renderInfoRows = (property) => {
       { label: "Rent", value: property.details?.rent || property.price },
       { label: "Sharing", value: property.details?.sharing || "N/A" },
       { label: "Posted On", value: property.details?.postedOn || "N/A" },
-      { label: "Property Id", value: property.details?.propertyId || property.id },
+      {
+        label: "Property Id",
+        value: property.details?.propertyId || property.id,
+      },
     ];
   }
 
   return [
     { label: "Rent", value: property.details?.rent || property.price },
-    { label: "Location", value: property.details?.location || property.location },
+    {
+      label: "Location",
+      value: property.details?.location || property.location,
+    },
     { label: "Floor", value: property.details?.floor || "N/A" },
     { label: "Size", value: property.details?.size || property.bhk || "N/A" },
     { label: "Flat Type", value: property.details?.flatType || "N/A" },
@@ -27,7 +33,10 @@ const renderInfoRows = (property) => {
     { label: "Availablity", value: property.details?.availability || "N/A" },
     { label: "For", value: property.details?.occupancyFor || "N/A" },
     { label: "Posted On", value: property.details?.postedOn || "N/A" },
-    { label: "Property Id", value: property.details?.propertyId || property.id },
+    {
+      label: "Property Id",
+      value: property.details?.propertyId || property.id,
+    },
   ];
 };
 
@@ -59,13 +68,12 @@ Please share more details.
 `;
 
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    message
+    message,
   )}`;
 
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-2">
-        
         {/* LEFT SIDE IMAGES */}
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
@@ -86,8 +94,16 @@ Please share more details.
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {[property.image, property.image, property.image, property.image].map((imageSrc, idx) => (
-                <div key={`${property.id}-thumb-${idx}`} className="overflow-hidden rounded-2xl border border-white/10">
+              {[
+                property.image,
+                property.image,
+                property.image,
+                property.image,
+              ].map((imageSrc, idx) => (
+                <div
+                  key={`${property.id}-thumb-${idx}`}
+                  className="overflow-hidden rounded-2xl border border-white/10"
+                >
                   <img
                     src={imageSrc}
                     alt={`${property.title} image ${idx + 1}`}
@@ -102,9 +118,7 @@ Please share more details.
         {/* RIGHT SIDE DETAILS */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold md:text-4xl">
-              {property.title}
-            </h1>
+            <h1 className="text-3xl font-bold md:text-4xl">{property.title}</h1>
 
             <p className="mt-2 flex items-center gap-2 text-slate-400">
               <MapPin size={16} />
@@ -126,14 +140,14 @@ Please share more details.
             <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-[15px] text-slate-200">
               {detailRows.map((row) => (
                 <p key={row.label}>
-                  <span className="font-semibold text-white">
-                    {row.label}:
-                  </span>{" "}
+                  <span className="font-semibold text-white">{row.label}:</span>{" "}
                   {row.value}
                 </p>
               ))}
 
-              <p className="mt-6 text-[16px] text-slate-400">Contact us for more details.</p>
+              <p className="mt-6 text-[16px] text-slate-400">
+                Contact us for more details.
+              </p>
             </div>
           </div>
 

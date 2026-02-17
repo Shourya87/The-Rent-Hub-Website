@@ -77,5 +77,40 @@
     "id": 3,
     "createdAt": "2026-02-16T22:32:58.319Z",
     "updatedAt": "2026-02-16T22:32:58.319Z"
+  },
+  {
+    "title": "Proper 1BHK",
+    "location": "Alpha 1",
+    "price": 8500,
+    "image": "http://localhost:3000/uploads/images/1771285184063-logotransparent-3.png",
+    "video": "http://localhost:3000/uploads/videos/1771284974090-reel.mp4",
+    "description": "Rent: 8500\nLocation: Alpha 1\nFloor: 1\nSize: 1BHK\nFlat Type: With Owner\nFurnished: Raw\nAvailablity: From Tommorow\nFor Student/Family/Girls/Boys/Working: Single Girls Only\nPosted On: 16-2-2026\nProperty Id: KR\nContact us for more details.",
+    "featured": true,
+    "bhk": "1BHK",
+    "category": "Flat",
+    "propertyType": "Flat",
+    "beds": 1,
+    "baths": 1,
+    "area": 0,
+    "highlights": [
+      "Prime Location"
+    ],
+    "details": {
+      "rent": "8500",
+      "location": "Alpha 1",
+      "floor": "1",
+      "size": "1BHK",
+      "flatType": "With Owner",
+      "furnished": "Raw",
+      "availability": "From Tommorow",
+      "occupancyFor": "Single Girls Only",
+      "contactNote": "Contact us for more details.",
+      "postedOn": "16-2-2026",
+      "propertyId": "KR",
+      "video": "http://localhost:3000/uploads/videos/1771284974090-reel.mp4"
+    },
+    "id": 4,
+    "createdAt": "2026-02-16T23:35:07.927Z",
+    "updatedAt": "2026-02-16T23:39:49.213Z"
   }
 ]

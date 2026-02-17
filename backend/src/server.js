@@ -20,7 +20,7 @@ const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 4000; // 🔥 4000 rakho (proxy ke liye)
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@therenthub.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5174";
@@ -28,8 +28,11 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5174";
 const allowedOrigins = FRONTEND_ORIGIN.split(",")
   .map((value) => value.trim())
   .filter(Boolean);
+
 const isAllowedOrigin = (origin) => allowedOrigins.includes(origin);
 
+
+// ================= CORS =================
 app.use((request, response, next) => {
   const origin = request.headers.origin || "";
 
@@ -39,30 +42,41 @@ app.use((request, response, next) => {
 
   response.header("Vary", "Origin");
   response.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  response.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  response.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization"
+  );
 
   if (request.method === "OPTIONS") {
-    response.status(204).end();
-    return;
+    return response.status(204).end();
   }
 
   next();
 });
 
-app.use("/uploads", express.static(uploadsRoot));
-app.use("/", express.static(path.resolve(__dirname, "../public")));
 
+// ================= 🔥 STATIC MEDIA SERVING =================
+// This is VERY IMPORTANT
+// It exposes backend/src/uploads publicly at /uploads
+
+app.use("/uploads", express.static(uploadsRoot));
+
+
+// ================= HEALTH =================
 app.get("/api/health", (_request, response) => {
   response.json({ ok: true, storage: getStorageMode() });
 });
 
+
+// ================= ADMIN LOGIN =================
 app.post("/api/admin/login", (request, response) => {
   const email = request.body?.email?.trim()?.toLowerCase() || "";
   const password = request.body?.password || "";
 
   if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-    response.status(401).json({ message: "Invalid admin email or password." });
-    return;
+    return response.status(401).json({
+      message: "Invalid admin email or password.",
+    });
   }
 
   response.json({
@@ -72,46 +86,48 @@ app.post("/api/admin/login", (request, response) => {
   });
 });
 
-app.post("/api/upload", requireAdminAuth, upload.single("base64"), async (request, response) => {
-  try {
-    const { base64, mimeType, mediaType, originalName } = request.body || {};
 
-    let fileData = base64;
-    let resolvedMimeType = mimeType;
-    let resolvedOriginalName = originalName;
+// ================= MEDIA UPLOAD =================
+app.post(
+  "/api/upload",
+  requireAdminAuth,
+  upload.single("file"),
+  async (request, response) => {
+    try {
+      const file = request.file;
 
-    if (request.file?.buffer) {
-      fileData = request.file.buffer.toString("base64");
-      resolvedMimeType = request.file.mimetype || mimeType;
-      resolvedOriginalName = request.file.originalname || originalName;
+      if (!file) {
+        return response.status(400).json({
+          success: false,
+          message: "No file uploaded.",
+        });
+      }
+
+      // multer already saved the file into uploads folder
+      const relativePath = `/uploads/${file.destination.includes("videos") ? "videos" : "images"}/${file.filename}`;
+
+      const fullUrl = `${request.protocol}://${request.get("host")}${relativePath}`;
+
+      response.status(201).json({
+        success: true,
+        data: {
+          fileName: file.filename,
+          url: fullUrl,
+          urlPath: relativePath,
+        },
+      });
+
+    } catch (error) {
+      response.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Unable to upload media.",
+      });
     }
-
-    if (!fileData) {
-      response.status(400).json({ message: "Missing media payload." });
-      return;
-    }
-
-    const saved = await saveBase64Media({
-      base64: fileData,
-      mimeType: resolvedMimeType,
-      mediaType,
-      originalName: resolvedOriginalName,
-    });
-
-    response.status(201).json({
-      success: true,
-      data: {
-        ...saved,
-        url: `${request.protocol}://${request.get("host")}${saved.urlPath}`,
-      },
-    });
-  } catch (error) {
-    response.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unable to upload media.",
-    });
   }
-});
+);
+
+
+// ================= PROPERTIES =================
 
 app.get("/api/properties", async (_request, response) => {
   const properties = await listProperties();
@@ -122,26 +138,29 @@ app.get("/api/properties/:id", async (request, response) => {
   const property = await getPropertyById(request.params.id);
 
   if (!property) {
-    response.status(404).json({ message: "Property not found" });
-    return;
+    return response.status(404).json({
+      message: "Property not found",
+    });
   }
 
   response.json({ data: property });
 });
 
 app.post("/api/properties", requireAdminAuth, async (request, response) => {
-  const payload = request.body || {};
-  const created = await createProperty(payload);
+  const created = await createProperty(request.body || {});
   response.status(201).json({ data: created });
 });
 
 app.put("/api/properties/:id", requireAdminAuth, async (request, response) => {
-  const payload = request.body || {};
-  const updated = await updatePropertyById(request.params.id, payload);
+  const updated = await updatePropertyById(
+    request.params.id,
+    request.body || {}
+  );
 
   if (!updated) {
-    response.status(404).json({ message: "Property not found" });
-    return;
+    return response.status(404).json({
+      message: "Property not found",
+    });
   }
 
   response.json({ data: updated });
@@ -151,15 +170,19 @@ app.delete("/api/properties/:id", requireAdminAuth, async (request, response) =>
   const deleted = await deletePropertyById(request.params.id);
 
   if (!deleted) {
-    response.status(404).json({ message: "Property not found" });
-    return;
+    return response.status(404).json({
+      message: "Property not found",
+    });
   }
 
   response.status(204).end();
 });
 
+
+// ================= ERROR HANDLER =================
 app.use(errorHandler);
 
+
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log(`🔥 Backend running on http://localhost:${PORT}`);
 });
