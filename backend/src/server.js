@@ -1,7 +1,10 @@
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   createProperty,
   deletePropertyById,
+  getDatabaseMode,
   getPropertyById,
   listProperties,
   updatePropertyById,
@@ -16,8 +19,10 @@ import {
 } from "./utils/mediaStore.js";
 
 const app = express();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use("/uploads", express.static(path.resolve(__dirname, "./uploads")));
 
 const PORT = Number(process.env.PORT) || 4000;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@therenthub.com";
@@ -51,6 +56,7 @@ app.use((request, response, next) => {
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
+    database: getDatabaseMode(),
     storage: getStorageMode(),
     bucket: SUPABASE_STORAGE_BUCKET,
   });

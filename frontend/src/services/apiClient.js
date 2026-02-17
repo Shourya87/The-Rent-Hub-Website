@@ -9,6 +9,24 @@ const buildUrl = (path) => {
   return `${API_BASE_URL}${path}`;
 };
 
+export const resolveApiAssetUrl = (path) => {
+  const value = String(path || "").trim();
+
+  if (!value) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (!API_BASE_URL) {
+    return value;
+  }
+
+  return `${API_BASE_URL}${value.startsWith("/") ? "" : "/"}${value}`;
+};
+
 export const getStoredAdminToken = () => localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "";
 
 export const setStoredAdminToken = (token) => {

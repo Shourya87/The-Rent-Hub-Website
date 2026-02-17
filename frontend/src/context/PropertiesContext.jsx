@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { apiClient } from "@/services/apiClient";
+import { apiClient, resolveApiAssetUrl } from "@/services/apiClient";
 import { getSupabasePublicUrl } from "@/lib/supabase";
 
 const PropertiesContext = createContext(null);
@@ -16,6 +16,10 @@ const resolveMediaUrl = (value = "") => {
 
   if (/^https?:\/\//i.test(trimmed)) {
     return trimmed;
+  }
+
+  if (trimmed.startsWith("/uploads/")) {
+    return resolveApiAssetUrl(trimmed);
   }
 
   return getSupabasePublicUrl(trimmed);
