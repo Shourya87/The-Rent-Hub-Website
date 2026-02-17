@@ -1,6 +1,9 @@
 import { createJsonCollection } from "./db.js";
+import { postgresStore } from "./postgresStore.js";
 
 const propertiesDb = createJsonCollection("properties.json", []);
+
+const isPostgresEnabled = () => postgresStore.isConfigured();
 
 const normalizeMediaKey = (value = "") => {
   const trimmed = String(value || "").trim();
@@ -21,6 +24,10 @@ const normalizeMediaKey = (value = "") => {
       }
     }
 
+    return trimmed;
+  }
+
+  if (trimmed.startsWith("/uploads/")) {
     return trimmed;
   }
 
@@ -45,6 +52,10 @@ const normalizePayload = (payload = {}) => {
 };
 
 export const listProperties = async () => {
+  if (isPostgresEnabled()) {
+    return postgresStore.list();
+  }
+
   const properties = await propertiesDb.read();
   return Array.isArray(properties)
     ? properties.sort((a, b) => Number(b.id) - Number(a.id))
@@ -52,6 +63,10 @@ export const listProperties = async () => {
 };
 
 export const getPropertyById = async (id) => {
+  if (isPostgresEnabled()) {
+    return postgresStore.getById(id);
+  }
+
   const properties = await propertiesDb.read();
   if (!Array.isArray(properties)) {
     return null;
@@ -61,6 +76,10 @@ export const getPropertyById = async (id) => {
 };
 
 export const createProperty = async (payload) => {
+  if (isPostgresEnabled()) {
+    return postgresStore.create(normalizePayload(payload));
+  }
+
   const properties = await propertiesDb.read();
   const safeProperties = Array.isArray(properties) ? properties : [];
   const maxId = safeProperties.reduce((max, property) => Math.max(max, Number(property.id) || 0), 0);
@@ -79,6 +98,13 @@ export const createProperty = async (payload) => {
 };
 
 export const updatePropertyById = async (id, payload) => {
+  if (isPostgresEnabled()) {
+    return postgresStore.updateById(id, {
+      ...normalizePayload(payload),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
   const properties = await propertiesDb.read();
   const safeProperties = Array.isArray(properties) ? properties : [];
   const index = safeProperties.findIndex((property) => Number(property.id) === Number(id));
@@ -100,6 +126,10 @@ export const updatePropertyById = async (id, payload) => {
 };
 
 export const deletePropertyById = async (id) => {
+  if (isPostgresEnabled()) {
+    return postgresStore.deleteById(id);
+  }
+
   const properties = await propertiesDb.read();
   const safeProperties = Array.isArray(properties) ? properties : [];
   const next = safeProperties.filter((property) => Number(property.id) !== Number(id));
@@ -112,4 +142,4 @@ export const deletePropertyById = async (id) => {
   return true;
 };
 
-export const getStorageMode = () => "json";
+export const getDatabaseMode = () => (isPostgresEnabled() ? "postgres" : "json");
