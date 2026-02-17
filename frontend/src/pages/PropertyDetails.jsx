@@ -158,7 +158,7 @@ Please share more details.
               className="flex-1 rounded-full bg-linear-to-r from-orange-500 to-pink-500 text-white hover:opacity-90"
             >
               <a href={whatsappLink} target="_blank" rel="noreferrer">
-                <Phone size={16} className="mr-2" />
+                <Phone size={17} className="mr-2" />
                 Contact Us
               </a>
             </Button>
