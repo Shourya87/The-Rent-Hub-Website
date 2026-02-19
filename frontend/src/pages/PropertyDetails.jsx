@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePropertiesContext } from "../context/PropertiesContext";
-import { getSupabasePublicUrl } from "@/lib/supabase";
+import { resolveApiAssetUrl } from "@/services/apiClient";
 
 const WHATSAPP_NUMBER = "919217566061";
 
@@ -15,7 +15,7 @@ const resolveDisplayUrl = (value = "") => {
     return value;
   }
 
-  return getSupabasePublicUrl(value);
+  return resolveApiAssetUrl(value);
 };
 
 const renderInfoRows = (property) => {

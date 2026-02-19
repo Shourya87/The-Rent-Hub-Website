@@ -1,9 +1,0 @@
-* { box-sizing: border-box; }
-body { margin: 0; font-family: Inter, Arial, sans-serif; background: #0f0f10; color: #fff; }
-a { color: inherit; text-decoration: none; }
-.container { max-width: 920px; margin: 0 auto; padding: 24px; }
-.card { background: #17181a; border: 1px solid #2c2d30; border-radius: 12px; padding: 16px; }
-.input, .btn { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2f3136; }
-.input { background: #111214; color: #fff; margin-bottom: 10px; }
-.btn { background: #fff; color: #111; font-weight: 600; cursor: pointer; }
-.grid { display: grid; gap: 12px; }

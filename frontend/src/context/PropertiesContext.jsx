@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { apiClient, resolveApiAssetUrl } from "@/services/apiClient";
-import { getSupabasePublicUrl } from "@/lib/supabase";
 
 const PropertiesContext = createContext(null);
 
@@ -22,7 +21,7 @@ const resolveMediaUrl = (value = "") => {
     return resolveApiAssetUrl(trimmed);
   }
 
-  return getSupabasePublicUrl(trimmed);
+  return resolveApiAssetUrl(trimmed);
 };
 
 const normalizeProperty = (property, fallbackId) => {
